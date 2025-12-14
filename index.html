@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UpZy - Track steps and calories with friends">
+    <title>UpZy</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="Images/UpZyV3.png" alt="UpZy Logo" class="logo-img">
+                <span>UpZy</span>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" data-page="home" class="nav-link active">Home</a></li>
+                <li><a href="#" data-page="dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="#" data-page="leaderboard" class="nav-link">Leaderboard</a></li>
+                <li><a href="#" data-page="admin" class="nav-link">Admin</a></li>
+            </ul>
+            <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container main-content">
+        
+        <!-- Home Page -->
+        <div id="page-home" class="page active">
+            <div class="hero">
+                <h1>Welcome to UpZy</h1>
+                <p>Track your steps and compete with friends</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="showPage('join')">Join Challenge</button>
+                    <button class="btn btn-secondary" onclick="showPage('admin-login')">Admin Access</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Join Challenge Page -->
+        <div id="page-join" class="page" style="display:none;">
+            <div class="form-container">
+                <h2>Join UpZy</h2>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">Sign in with Google to join the challenge</p>
+                <div id="googleSignIn" style="display: flex; justify-content: center; margin-bottom: 2rem;"></div>
+                
+                <div style="text-align: center; color: var(--text-secondary); margin: 2rem 0;">OR use invite code</div>
+                
+                <form id="joinForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="joinEmail" required placeholder="your.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Invite Code</label>
+                        <input type="text" id="inviteCode" required placeholder="Enter your invite code">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Join Challenge</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('home')">Back</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Login Page -->
+        <div id="page-admin-login" class="page" style="display:none;">
+            <div class="form-container">
+                <h2>Admin Access</h2>
+                <form id="adminLoginForm">
+                    <div class="form-group">
+                        <label>Admin Password</label>
+                        <input type="password" id="adminPassword" required placeholder="Enter admin password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('home')">Back</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page" style="display:none;">
+            <div class="dashboard-header">
+                <h2>Welcome, <span id="userNameDisplay">User</span>!</h2>
+                <div class="challenge-info">
+                    <span id="daysRemaining">30 days remaining</span>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSteps">0</div>
+                    <div class="stat-label">Total Steps</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCalories">0</div>
+                    <div class="stat-label">Total Calories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="currentRank">-</div>
+                    <div class="stat-label">Current Rank</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="streak">0</div>
+                    <div class="stat-label">Day Streak 🔥</div>
+                </div>
+            </div>
+
+            <div class="submission-card">
+                <h3>Submit Today's Activity</h3>
+                <form id="submitForm">
+                    <div class="form-group">
+                        <label>Steps Today</label>
+                        <input type="number" id="stepsInput" required min="0" placeholder="Enter steps">
+                    </div>
+                    <div class="form-group">
+                        <label>Calories Burned</label>
+                        <input type="number" id="caloriesInput" required min="0" placeholder="Enter calories">
+                    </div>
+                    <div class="form-group">
+                        <label>Date (default: today)</label>
+                        <input type="date" id="dateInput">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Leaderboard Page -->
+        <div id="page-leaderboard" class="page" style="display:none;">
+            <div class="leaderboard-tabs">
+                <button class="tab-btn active" data-tab="daily">Daily Winner</button>
+                <button class="tab-btn" data-tab="weekly">Weekly Ranking</button>
+                <button class="tab-btn" data-tab="overall">Overall</button>
+            </div>
+
+            <div id="tab-daily" class="tab-content active">
+                <h3>Today's Top Performers</h3>
+                <div id="dailyLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <div id="tab-weekly" class="tab-content" style="display:none;">
+                <h3>This Week's Ranking</h3>
+                <div id="weeklyLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <div id="tab-overall" class="tab-content" style="display:none;">
+                <h3>Overall Challenge Ranking</h3>
+                <div id="overallLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <div class="chart-container" style="margin-top: 3rem;">
+                <h3>Progress Chart</h3>
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="page-admin" class="page" style="display:none;">
+            <div class="admin-panel">
+                <h2>Admin Panel</h2>
+                
+                <div class="admin-section">
+                    <h3>Generate Invite Codes</h3>
+                    <form id="inviteForm">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="emailForInvite" required placeholder="friend@example.com">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Generate Invite</button>
+                    </form>
+                    <div id="generatedInvite" style="display:none; margin-top: 1rem;">
+                        <p>Invite Code: <strong id="inviteCodeDisplay"></strong></p>
+                        <p>Share this code with: <strong id="emailDisplay"></strong></p>
+                        <button onclick="copyInvite()" class="btn btn-secondary">Copy</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3>Challenge Settings</h3>
+                    <div class="form-group">
+                        <label>Challenge Duration (days)</label>
+                        <input type="number" id="challengeDuration" value="30" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Challenge Start Date</label>
+                        <input type="date" id="challengeStartDate">
+                    </div>
+                    <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
+                </div>
+
+                <div class="admin-section">
+                    <h3>All Participants</h3>
+                    <div id="participantsList" class="participants-list"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/google-sheets-api.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>

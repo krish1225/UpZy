@@ -1,0 +1,70 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient circle -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#34d399;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6ee7b7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bgGradient)"/>
+  
+  <!-- Checkered finish line pattern at bottom -->
+  <g id="checkered">
+    <rect x="20" y="160" width="20" height="20" fill="#ffffff"/>
+    <rect x="60" y="160" width="20" height="20" fill="#ffffff"/>
+    <rect x="100" y="160" width="20" height="20" fill="#ffffff"/>
+    <rect x="140" y="160" width="20" height="20" fill="#ffffff"/>
+    <rect x="40" y="160" width="20" height="20" fill="#1e293b"/>
+    <rect x="80" y="160" width="20" height="20" fill="#1e293b"/>
+    <rect x="120" y="160" width="20" height="20" fill="#1e293b"/>
+    <rect x="160" y="160" width="20" height="20" fill="#1e293b"/>
+  </g>
+  
+  <!-- Runner silhouette -->
+  <g id="runner" transform="translate(100, 85)">
+    <!-- Head -->
+    <circle cx="0" cy="-28" r="8" fill="#1e293b"/>
+    
+    <!-- Body -->
+    <rect x="-6" y="-18" width="12" height="18" fill="#1e293b" rx="2"/>
+    
+    <!-- Left arm (back) -->
+    <line x1="-6" y1="-12" x2="-20" y2="-8" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Right arm (forward) -->
+    <line x1="6" y1="-12" x2="18" y2="-18" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Left leg (forward) -->
+    <line x1="-4" y1="0" x2="-8" y2="18" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Right leg (back) -->
+    <line x1="4" y1="0" x2="12" y2="16" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Finish line ribbon -->
+  <g id="ribbon">
+    <path d="M 50 60 Q 100 55 150 60" stroke="#ffffff" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <text x="100" y="72" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">FINISH</text>
+  </g>
+  
+  <!-- Motion lines -->
+  <g id="motion" stroke="#ffffff" stroke-width="2" opacity="0.7">
+    <line x1="30" y1="70" x2="15" y2="65"/>
+    <line x1="35" y1="90" x2="18" y2="88"/>
+    <line x1="170" y1="75" x2="185" y2="70"/>
+    <line x1="165" y1="95" x2="182" y2="92"/>
+  </g>
+  
+  <!-- Confetti/sparkles -->
+  <g id="sparkles" fill="#fbbf24" opacity="0.8">
+    <circle cx="40" cy="40" r="3"/>
+    <circle cx="160" cy="50" r="2.5"/>
+    <circle cx="45" cy="110" r="2.5"/>
+    <circle cx="155" cy="100" r="3"/>
+    <circle cx="70" cy="30" r="2"/>
+    <circle cx="130" cy="35" r="2"/>
+  </g>
+</svg>
