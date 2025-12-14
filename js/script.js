@@ -210,11 +210,11 @@ function handleJoin(e) {
   const email = document.getElementById('joinEmail').value.trim();
   const inviteCode = document.getElementById('inviteCode').value.trim().toUpperCase();
 
-  // Check if invite code exists (check both current state and previously generated codes)
-  const codeExists = appState.inviteCodes[inviteCode] || 
-                     Object.values(appState.inviteCodes).some(code => code.code === inviteCode);
+  console.log('Attempting to join with:', { email, inviteCode });
+  console.log('Available codes:', Object.keys(appState.inviteCodes));
 
-  if (codeExists && email) {
+  // Check if invite code exists
+  if (inviteCode in appState.inviteCodes && email) {
     appState.currentUser = email;
     
     // Check if participant already exists
@@ -234,6 +234,7 @@ function handleJoin(e) {
     document.getElementById('inviteCode').value = '';
     showPage('dashboard');
   } else {
+    console.log('Join failed - code exists:', inviteCode in appState.inviteCodes, 'email provided:', !!email);
     alert('Invalid invite code. Please check and try again.');
   }
 }
