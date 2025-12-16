@@ -280,35 +280,37 @@ function handleLogin(e) {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
 
-  if (!appState.userPasswords) {
-    appState.userPasswords = {};
-  }
+  // Check email and password against Supabase
+  supabase.getUser(email).then(user => {
+    if (!user) {
+      showNotification('Email not found. Please sign up first.', 'error');
+      return;
+    }
 
-  // Check if email exists and password matches
-  if (!appState.userPasswords[email]) {
-    showNotification('Email not found. Please sign up first.', 'error');
-    return;
-  }
+    if (user.password !== password) {
+      showNotification('Incorrect password', 'error');
+      return;
+    }
 
-  if (appState.userPasswords[email] !== password) {
-    showNotification('Incorrect password', 'error');
-    return;
-  }
+    // Login successful
+    appState.currentUser = email;
+    appState.isAdmin = user.is_admin || false;
+    saveAppState();
+    updateUIState();
 
-  // Login successful
-  appState.currentUser = email;
-  saveAppState();
-  updateUIState();
+    showNotification('✅ Login successful!', 'success');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
 
-  showNotification('✅ Login successful!', 'success');
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPassword').value = '';
-
-  // Go to invite code page
-  setTimeout(() => {
-    document.getElementById('joinCodeEmail').value = email;
-    showPage('join-with-code');
-  }, 500);
+    // Go to invite code page
+    setTimeout(() => {
+      document.getElementById('joinCodeEmail').value = email;
+      showPage('join-with-code');
+    }, 500);
+  }).catch(err => {
+    console.error('Login error:', err);
+    showNotification('Login failed. Please try again.', 'error');
+  });
 }
 
 // Handle signup
@@ -328,32 +330,38 @@ function handleSignup(e) {
     return;
   }
 
-  if (!appState.userPasswords) {
-    appState.userPasswords = {};
-  }
+  // Check if email already exists in Supabase
+  supabase.getUser(email).then(user => {
+    if (user) {
+      showNotification('Email already exists. Please login instead.', 'error');
+      return;
+    }
 
-  // Check if email already exists
-  if (appState.userPasswords[email]) {
-    showNotification('Email already exists. Please login instead.', 'error');
-    return;
-  }
+    // Create account in Supabase
+    supabase.createUser(email, password).then(result => {
+      appState.currentUser = email;
+      appState.isAdmin = false;
+      saveAppState();
+      updateUIState();
 
-  // Create account
-  appState.userPasswords[email] = password;
-  appState.currentUser = email;
-  saveAppState();
-  updateUIState();
+      showNotification('✅ Account created successfully!', 'success');
+      document.getElementById('signupEmail').value = '';
+      document.getElementById('signupPassword').value = '';
+      document.getElementById('signupPasswordConfirm').value = '';
 
-  showNotification('✅ Account created successfully!', 'success');
-  document.getElementById('signupEmail').value = '';
-  document.getElementById('signupPassword').value = '';
-  document.getElementById('signupPasswordConfirm').value = '';
-
-  // Go to invite code page
-  setTimeout(() => {
-    document.getElementById('joinCodeEmail').value = email;
-    showPage('join-with-code');
-  }, 500);
+      // Go to invite code page
+      setTimeout(() => {
+        document.getElementById('joinCodeEmail').value = email;
+        showPage('join-with-code');
+      }, 500);
+    }).catch(err => {
+      console.error('Signup error:', err);
+      showNotification('Signup failed. Please try again.', 'error');
+    });
+  }).catch(err => {
+    console.error('Error checking email:', err);
+    showNotification('Error creating account. Please try again.', 'error');
+  });
 }
 
 // Handle forgot password
@@ -362,16 +370,6 @@ function handleForgotPassword(e) {
   const email = document.getElementById('forgotEmail').value.trim();
   const password = document.getElementById('forgotPassword').value;
   const passwordConfirm = document.getElementById('forgotPasswordConfirm').value;
-
-  if (!appState.userPasswords) {
-    appState.userPasswords = {};
-  }
-
-  // Check if email exists
-  if (!appState.userPasswords[email]) {
-    showNotification('Email not found. Please sign up first.', 'error');
-    return;
-  }
 
   if (password !== passwordConfirm) {
     showNotification('Passwords do not match', 'error');
@@ -383,19 +381,32 @@ function handleForgotPassword(e) {
     return;
   }
 
-  // Update password
-  appState.userPasswords[email] = password;
-  saveAppState();
+  // Check if email exists in Supabase and update password
+  supabase.getUser(email).then(user => {
+    if (!user) {
+      showNotification('Email not found. Please sign up first.', 'error');
+      return;
+    }
 
-  showNotification('✅ Password reset successfully!', 'success');
-  document.getElementById('forgotEmail').value = '';
-  document.getElementById('forgotPassword').value = '';
-  document.getElementById('forgotPasswordConfirm').value = '';
+    // Update password in Supabase
+    supabase.updateUserPassword(email, password).then(result => {
+      showNotification('✅ Password reset successfully!', 'success');
+      document.getElementById('forgotEmail').value = '';
+      document.getElementById('forgotPassword').value = '';
+      document.getElementById('forgotPasswordConfirm').value = '';
 
-  // Go back to login
-  setTimeout(() => {
-    switchAuthTab('login');
-  }, 500);
+      // Go back to login
+      setTimeout(() => {
+        switchAuthTab('login');
+      }, 500);
+    }).catch(err => {
+      console.error('Password reset error:', err);
+      showNotification('Failed to reset password. Please try again.', 'error');
+    });
+  }).catch(err => {
+    console.error('Error checking email:', err);
+    showNotification('Error resetting password. Please try again.', 'error');
+  });
 }
 
 // Handle join with invite code

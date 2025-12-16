@@ -161,6 +161,53 @@ class SupabaseClient {
   async getAllInviteCodes() {
     return this.request('GET', 'invite_codes');
   }
+
+  // User Authentication
+  async createUser(email, password) {
+    return this.request('POST', 'users', { email, password });
+  }
+
+  async getUser(email) {
+    let url = `${this.url}/rest/v1/users?email=eq.${email}`;
+    const options = {
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      console.error('Failed to get user:', error);
+      return null;
+    }
+  }
+
+  async updateUserPassword(email, password) {
+    let url = `${this.url}/rest/v1/users?email=eq.${email}`;
+    const options = {
+      method: 'PATCH',
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ password })
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to update password:', error);
+      throw error;
+    }
+  }
 }
 
 // Create global Supabase client instance
