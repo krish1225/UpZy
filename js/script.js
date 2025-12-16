@@ -205,37 +205,33 @@ function updateUIState() {
 // AUTHENTICATION
 // ============================================
 
-function handleJoin(e) {
+async function handleJoin(e) {
   e.preventDefault();
   const email = document.getElementById('joinEmail').value.trim();
   const inviteCode = document.getElementById('inviteCode').value.trim().toUpperCase();
 
-  console.log('Attempting to join with:', { email, inviteCode });
-  console.log('Available codes:', Object.keys(appState.inviteCodes));
-
-  // Check if invite code exists
-  if (inviteCode in appState.inviteCodes && email) {
-    appState.currentUser = email;
+  try {
+    // Verify invite code with Supabase
+    const validInvite = await supabase.getInviteCode(inviteCode);
     
-    // Check if participant already exists
-    const participantExists = appState.participants.some(p => p.email === email);
-    if (!participantExists) {
-      appState.participants.push({ 
-        email, 
-        joinDate: new Date().toISOString().split('T')[0],
-        status: 'active'
-      });
+    if (!validInvite) {
+      alert('Invalid invite code. Please check and try again.');
+      return;
     }
+
+    // Add participant to Supabase
+    await supabase.addParticipant(email);
     
+    appState.currentUser = email;
     saveAppState();
     
     alert('Successfully joined the challenge!');
     document.getElementById('joinEmail').value = '';
     document.getElementById('inviteCode').value = '';
     showPage('dashboard');
-  } else {
-    console.log('Join failed - code exists:', inviteCode in appState.inviteCodes, 'email provided:', !!email);
-    alert('Invalid invite code. Please check and try again.');
+  } catch (error) {
+    console.error('Join error:', error);
+    alert('Error joining challenge. Please try again.');
   }
 }
 
@@ -299,7 +295,7 @@ function updateDashboard() {
   document.getElementById('daysRemaining').textContent = `${Math.max(0, daysRemaining)} days remaining`;
 }
 
-function handleSubmission(e) {
+async function handleSubmission(e) {
   e.preventDefault();
   
   const steps = parseInt(document.getElementById('stepsInput').value);
@@ -311,33 +307,39 @@ function handleSubmission(e) {
     return;
   }
 
-  // Check if already submitted for this date
-  const existing = appState.submissions.find(
-    s => s.email === appState.currentUser && s.date === date
-  );
+  try {
+    // Save to Supabase
+    await supabase.addSubmission(appState.currentUser, date, steps, calories);
+    
+    // Also save locally
+    const existing = appState.submissions.find(
+      s => s.email === appState.currentUser && s.date === date
+    );
 
-  if (existing) {
-    // Update existing
-    existing.steps = steps;
-    existing.calories = calories;
-  } else {
-    // Add new
-    appState.submissions.push({
-      email: appState.currentUser,
-      date,
-      steps,
-      calories
-    });
+    if (existing) {
+      existing.steps = steps;
+      existing.calories = calories;
+    } else {
+      appState.submissions.push({
+        email: appState.currentUser,
+        date,
+        steps,
+        calories
+      });
+    }
+
+    saveAppState();
+    alert('✅ Submission saved!');
+    
+    document.getElementById('submitForm').reset();
+    const dateInput = document.getElementById('dateInput');
+    dateInput.valueAsDate = new Date();
+    
+    updateDashboard();
+  } catch (error) {
+    console.error('Submission error:', error);
+    alert('Error saving submission. Please try again.');
   }
-
-  saveAppState();
-  alert('✅ Submission saved!');
-  
-  document.getElementById('submitForm').reset();
-  const dateInput = document.getElementById('dateInput');
-  dateInput.valueAsDate = new Date();
-  
-  updateDashboard();
 }
 
 // ============================================
@@ -457,20 +459,30 @@ function getMedalEmoji(rank) {
 // ADMIN PANEL
 // ============================================
 
-function handleGenerateInvite(e) {
+async function handleGenerateInvite(e) {
   e.preventDefault();
   const email = document.getElementById('emailForInvite').value.trim();
   
   if (!email) return;
 
-  const inviteCode = generateInviteCode();
-  appState.inviteCodes[inviteCode] = { email, createdAt: new Date().toISOString() };
-  saveAppState();
+  try {
+    const inviteCode = generateInviteCode();
+    
+    // Save to Supabase
+    await supabase.addInviteCode(inviteCode, email);
+    
+    // Also save locally for quick reference
+    appState.inviteCodes[inviteCode] = { email, createdAt: new Date().toISOString() };
+    saveAppState();
 
-  document.getElementById('inviteCodeDisplay').textContent = inviteCode;
-  document.getElementById('emailDisplay').textContent = email;
-  document.getElementById('generatedInvite').style.display = 'block';
-  document.getElementById('emailForInvite').value = '';
+    document.getElementById('inviteCodeDisplay').textContent = inviteCode;
+    document.getElementById('emailDisplay').textContent = email;
+    document.getElementById('generatedInvite').style.display = 'block';
+    document.getElementById('emailForInvite').value = '';
+  } catch (error) {
+    console.error('Error generating invite:', error);
+    alert('Error generating invite code. Please try again.');
+  }
 }
 
 function copyInvite() {
