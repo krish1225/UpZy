@@ -328,10 +328,11 @@ function handleLogin(e) {
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
 
-    // Go to invite code page
+    // Go to dashboard/activity submission page
     setTimeout(() => {
-      document.getElementById('joinCodeEmail').value = email;
-      showPage('join-with-code');
+      document.getElementById('userNameDisplay').textContent = email.split('@')[0];
+      showPage('dashboard');
+      loadUserStats();
     }, 500);
   }).catch(err => {
     console.error('Login error:', err);
@@ -643,6 +644,16 @@ async function updateDashboard() {
 
   const email = appState.currentUser;
   document.getElementById('userNameDisplay').textContent = email.split('@')[0];
+
+  // Set today's date in the date input
+  const dateInput = document.getElementById('dateInput');
+  if (dateInput) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+  }
 
   try {
     // Fetch user submissions from Supabase
