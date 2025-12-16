@@ -3,17 +3,17 @@
    ============================================== */
 
 :root {
-  --primary-color: #4f46e5;
-  --secondary-color: #06b6d4;
+  --primary-color: #7c3aed;
+  --secondary-color: #ec4899;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
   --dark-bg: #1f2937;
-  --light-bg: #f9fafb;
+  --light-bg: #ffffff;
   --white: #ffffff;
   --text-primary: #111827;
   --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
+  --border-color: #f3f4f6;
   --transition: all 0.3s ease;
 }
 
@@ -30,7 +30,7 @@ html {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-primary);
-  background-color: var(--light-bg);
+  background-color: #fafbfc;
   line-height: 1.6;
 }
 
@@ -160,6 +160,7 @@ p {
   margin-top: 70px;
   padding: 40px;
   min-height: calc(100vh - 70px);
+  background-color: #fafbfc;
 }
 
 .page {
@@ -180,20 +181,21 @@ p {
 .hero {
   text-align: center;
   padding: 15px 20px;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
+  background: white;
+  color: #333;
   border-radius: 12px;
   margin-bottom: 40px;
+  border: 1px solid #e5e7eb;
 }
 
 .hero h1 {
-  color: white;
+  color: #1a1a1a;
   font-size: 1.8rem;
   margin: 0.3rem 0;
 }
 
 .hero p {
-  color: rgba(255, 255, 255, 0.9);
+  color: #666;
   font-size: 0.9rem;
   margin-bottom: 1rem;
   margin-top: 0.3rem;
