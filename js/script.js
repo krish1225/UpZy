@@ -538,8 +538,8 @@ async function handleSubmission(e) {
   }
 
   try {
-    // Save to Supabase
-    await supabase.addSubmission(appState.currentUser, date, steps, calories);
+    // Save to Supabase (insert or update if exists)
+    await supabase.upsertSubmission(appState.currentUser, date, steps, calories);
     
     // Also save locally
     const existing = appState.submissions.find(

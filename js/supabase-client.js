@@ -82,6 +82,34 @@ class SupabaseClient {
     });
   }
 
+  async upsertSubmission(email, date, steps, calories) {
+    // Try to insert, if duplicate key error then update
+    try {
+      return await this.addSubmission(email, date, steps, calories);
+    } catch (error) {
+      if (error.message.includes('duplicate')) {
+        // Update existing submission
+        let url = `${this.url}/rest/v1/submissions?email=eq.${email}&submission_date=eq.${date}`;
+        const options = {
+          method: 'PATCH',
+          headers: {
+            'apikey': this.key,
+            'Authorization': `Bearer ${this.key}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            steps: parseInt(steps),
+            calories: parseInt(calories)
+          })
+        };
+        const response = await fetch(url, options);
+        return await response.json();
+      }
+      throw error;
+    }
+  }
+
   async getSubmissions(filters = {}) {
     return this.request('GET', 'submissions', null, filters);
   }
