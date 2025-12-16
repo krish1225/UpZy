@@ -208,7 +208,114 @@ class SupabaseClient {
       throw error;
     }
   }
+
+  // Challenges
+  async createChallenge(name, duration, startDate, description) {
+    return this.request('POST', 'challenges', {
+      name,
+      duration,
+      start_date: startDate,
+      description,
+      status: 'active'
+    });
+  }
+
+  async getChallenges() {
+    return this.request('GET', 'challenges');
+  }
+
+  async getChallengeById(id) {
+    let url = `${this.url}/rest/v1/challenges?id=eq.${id}`;
+    const options = {
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      console.error('Failed to get challenge:', error);
+      return null;
+    }
+  }
+
+  // User Challenge Progress
+  async addUserToChallenge(email, challengeId) {
+    return this.request('POST', 'user_challenge_progress', {
+      email,
+      challenge_id: challengeId,
+      joined_at: new Date().toISOString(),
+      status: 'active'
+    });
+  }
+
+  async getUserChallenges(email) {
+    let url = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}`;
+    const options = {
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to get user challenges:', error);
+      return [];
+    }
+  }
+
+  async getChallengeProgress(email, challengeId) {
+    let url = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}&challenge_id=eq.${challengeId}`;
+    const options = {
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      console.error('Failed to get challenge progress:', error);
+      return null;
+    }
+  }
+
+  async updateUserChallengeProgress(email, challengeId, data) {
+    let url = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}&challenge_id=eq.${challengeId}`;
+    const options = {
+      method: 'PATCH',
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(data)
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to update challenge progress:', error);
+      throw error;
+    }
+  }
 }
 
 // Create global Supabase client instance
 const supabase = new SupabaseClient(supabaseUrl, supabaseKey);
+

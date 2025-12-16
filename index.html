@@ -296,7 +296,7 @@
 
                 <!-- Challenges Tab -->
                 <div id="admin-tab-challenges" class="admin-tab-content active">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                         <!-- Create Challenge Section -->
                         <div class="challenge-form-section">
                             <h3>Create New Challenge</h3>
@@ -321,11 +321,41 @@
                             </form>
                         </div>
 
-                        <!-- View Challenges Section -->
+                        <!-- Quick Stats -->
                         <div class="challenge-list-section">
-                            <h3>Active Challenges</h3>
-                            <div id="challengesList" class="challenges-list"></div>
+                            <h3>Challenge Stats</h3>
+                            <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px;">
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);" id="totalChallengesCount">0</div>
+                                    <div style="color: var(--text-secondary);">Total Challenges</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 2rem; font-weight: bold; color: #10b981;" id="totalUsersInChallengesCount">0</div>
+                                    <div style="color: var(--text-secondary);">Total Users Enrolled</div>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Challenges Table -->
+                    <div class="challenges-table-section">
+                        <h3>All Challenges</h3>
+                        <table class="challenges-table">
+                            <thead>
+                                <tr>
+                                    <th>Challenge Name</th>
+                                    <th>Duration</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Enrolled Users</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="challengesTableBody">
+                                <tr><td colspan="7" style="text-align: center; color: #999;">No challenges created yet</td></tr>
+                            </tbody>
+                        </table>
                     </div>
 
                     <!-- Legacy Settings (for backward compatibility) -->

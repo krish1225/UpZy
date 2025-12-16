@@ -972,6 +972,7 @@ async function handleCreateChallenge(e) {
   }
   
   try {
+    // Create in local state
     const challenge = {
       id: Date.now().toString(),
       name,
@@ -985,17 +986,104 @@ async function handleCreateChallenge(e) {
     appState.challenges.push(challenge);
     saveAppState();
     
+    // Also save to Supabase
+    try {
+      await supabase.createChallenge(name, duration, startDate, description);
+    } catch (supabaseError) {
+      console.warn('Supabase save failed, but local save succeeded:', supabaseError);
+    }
+    
     showNotification('✅ Challenge created successfully!', 'success');
     
     // Reset form
     document.getElementById('createChallengeForm').reset();
     
-    // Reload challenges list
-    loadChallengesList();
+    // Reload challenges list and table
+    loadChallengesTable();
   } catch (error) {
     console.error('Error creating challenge:', error);
     showNotification('Error creating challenge', 'error');
   }
+}
+
+// Load and display challenges in a table
+async function loadChallengesTable() {
+  const tableBody = document.getElementById('challengesTableBody');
+  
+  if (!tableBody) return;
+  
+  try {
+    // Fetch from Supabase first, fallback to local state
+    let challenges = [];
+    try {
+      challenges = await supabase.getChallenges();
+    } catch (err) {
+      console.warn('Supabase fetch failed, using local challenges:', err);
+      challenges = appState.challenges;
+    }
+    
+    if (!challenges || challenges.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No challenges created yet</td></tr>';
+      updateChallengeStats(0, 0);
+      return;
+    }
+    
+    // Calculate enrolled users for each challenge
+    let totalEnrolled = 0;
+    
+    tableBody.innerHTML = challenges
+      .sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt))
+      .map(challenge => {
+        const startDate = new Date(challenge.start_date || challenge.startDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + (challenge.duration || 30));
+        
+        const enrolledCount = 0; // Will be updated when we fetch user progress
+        totalEnrolled += enrolledCount;
+        
+        return `
+          <tr>
+            <td><strong>${challenge.name}</strong></td>
+            <td>${challenge.duration || 30} days</td>
+            <td>${startDate.toLocaleDateString()}</td>
+            <td>${endDate.toLocaleDateString()}</td>
+            <td><span class="status-badge">${enrolledCount}</span></td>
+            <td><span class="status-badge status-${challenge.status || 'active'}">${(challenge.status || 'active').charAt(0).toUpperCase() + (challenge.status || 'active').slice(1)}</span></td>
+            <td>
+              <button onclick="editChallenge('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-right: 0.25rem;">Edit</button>
+              <button onclick="viewChallengeUsers('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Users</button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+    
+    updateChallengeStats(challenges.length, totalEnrolled);
+  } catch (error) {
+    console.error('Error loading challenges table:', error);
+    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading challenges</td></tr>';
+  }
+}
+
+// Update challenge stats
+function updateChallengeStats(totalChallenges, totalEnrolled) {
+  const totalCount = document.getElementById('totalChallengesCount');
+  const enrolledCount = document.getElementById('totalUsersInChallengesCount');
+  
+  if (totalCount) totalCount.textContent = totalChallenges;
+  if (enrolledCount) enrolledCount.textContent = totalEnrolled;
+}
+
+// View users enrolled in a challenge
+async function viewChallengeUsers(challengeId) {
+  showNotification('View users for challenge: ' + challengeId, 'info');
+  // This will be implemented further
+}
+
+// Edit a challenge
+async function editChallenge(challengeId) {
+  showNotification('Edit challenge: ' + challengeId, 'info');
+  // This will be implemented further
 }
 
 // Load challenges list
@@ -1071,8 +1159,8 @@ function saveSettings() {
 }
 
 async function updateAdminPanel() {
-  // Load challenges list
-  loadChallengesList();
+  // Load challenges table
+  loadChallengesTable();
   
   // Set default date for new challenge form
   const newChallengeStartDate = document.getElementById('newChallengeStartDate');
