@@ -34,6 +34,7 @@ class SupabaseClient {
     const options = {
       method,
       headers: {
+        'apikey': this.key,
         'Authorization': `Bearer ${this.key}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
@@ -45,6 +46,7 @@ class SupabaseClient {
     }
 
     try {
+      console.log(`[Supabase] ${method} ${table}`, data);
       const response = await fetch(url, options);
       const result = await response.json();
       
@@ -53,6 +55,7 @@ class SupabaseClient {
         throw new Error(result.message || 'Database error');
       }
       
+      console.log(`[Supabase] Success:`, result);
       return result;
     } catch (error) {
       console.error('Request failed:', error);
@@ -87,6 +90,7 @@ class SupabaseClient {
     let url = `${this.url}/rest/v1/submissions?email=eq.${email}`;
     const options = {
       headers: {
+        'apikey': this.key,
         'Authorization': `Bearer ${this.key}`,
         'Content-Type': 'application/json'
       }
@@ -110,6 +114,7 @@ class SupabaseClient {
     let url = `${this.url}/rest/v1/invite_codes?code=eq.${code}`;
     const options = {
       headers: {
+        'apikey': this.key,
         'Authorization': `Bearer ${this.key}`,
         'Content-Type': 'application/json'
       }

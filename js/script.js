@@ -188,12 +188,15 @@ function updateUIState() {
   const logoutBtn = document.getElementById('logoutBtn');
   const navLinks = document.getElementById('navLinks');
 
-  if (appState.currentUser) {
+  if (appState.currentUser || appState.isAdmin) {
     logoutBtn.style.display = 'block';
-    document.querySelectorAll('[data-page="dashboard"]').forEach(el => el.style.display = '');
-    document.querySelectorAll('[data-page="leaderboard"]').forEach(el => el.style.display = '');
   } else {
     logoutBtn.style.display = 'none';
+  }
+
+  if (appState.currentUser) {
+    document.querySelectorAll('[data-page="dashboard"]').forEach(el => el.style.display = '');
+    document.querySelectorAll('[data-page="leaderboard"]').forEach(el => el.style.display = '');
   }
 
   if (appState.isAdmin) {
@@ -224,6 +227,7 @@ async function handleJoin(e) {
     
     appState.currentUser = email;
     saveAppState();
+    updateUIState();
     
     alert('Successfully joined the challenge!');
     document.getElementById('joinEmail').value = '';
@@ -242,6 +246,7 @@ function handleAdminLogin(e) {
   if (password === CONFIG.ADMIN_PASSWORD) {
     appState.isAdmin = true;
     saveAppState();
+    updateUIState();
     document.getElementById('adminPassword').value = '';
     alert('Admin access granted');
     showPage('admin');
@@ -251,15 +256,12 @@ function handleAdminLogin(e) {
 }
 
 function logout() {
-  // Use Google sign out if available
-  if (typeof googleSignOut === 'function') {
-    googleSignOut();
-  } else {
-    appState.currentUser = null;
-    appState.isAdmin = false;
-    saveAppState();
-    showPage('home');
-  }
+  // Clear auth state
+  appState.currentUser = null;
+  appState.isAdmin = false;
+  saveAppState();
+  updateUIState();
+  showPage('home');
 }
 
 // ============================================
