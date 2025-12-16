@@ -254,6 +254,34 @@
         </div>
 
         <!-- Leaderboard Page -->
+        <div id="page-leaderboard" class="page" style="display:none;">
+            <h2>Leaderboard</h2>
+            <div class="leaderboard-tabs">
+                <button class="tab-btn active" data-tab="daily">Daily Winner</button>
+                <button class="tab-btn" data-tab="weekly">Weekly Ranking</button>
+                <button class="tab-btn" data-tab="overall">Overall</button>
+            </div>
+
+            <div id="tab-daily" class="tab-content active">
+                <h3>Today's Top Performers</h3>
+                <div id="dailyLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <div id="tab-weekly" class="tab-content" style="display:none;">
+                <h3>This Week's Ranking</h3>
+                <div id="weeklyLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <div id="tab-overall" class="tab-content" style="display:none;">
+                <h3>Overall Challenge Ranking</h3>
+                <div id="overallLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <div class="chart-container" style="margin-top: 3rem;">
+                <h3>Progress Chart</h3>
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
 
         <div id="page-admin" class="page" style="display:none;">
             <div class="admin-panel">

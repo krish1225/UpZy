@@ -233,6 +233,8 @@ function showPage(pageName) {
     showHomeContent();
   } else if (pageName === 'dashboard' && appState.currentUser) {
     updateDashboard();
+  } else if (pageName === 'leaderboard') {
+    loadLeaderboardPage();
   } else if (pageName === 'admin') {
     if (!appState.isAdmin) {
       showNotification('Admin access required', 'error');
@@ -803,11 +805,44 @@ function switchAdminTab(tab) {
   });
 }
 
+async function loadLeaderboardPage() {
+  // Load and display leaderboard on the dedicated leaderboard page
+  await updateLeaderboard();
+  setupLeaderboardTabs();
+}
+
 async function updateLeaderboard() {
   await updateDailyLeaderboard();
   await updateWeeklyLeaderboard();
   await updateOverallLeaderboard();
   await updateProgressChart();
+}
+
+function setupLeaderboardTabs() {
+  // Setup tab switching for leaderboard page
+  const tabButtons = document.querySelectorAll('#page-leaderboard .tab-btn');
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabName = this.getAttribute('data-tab');
+      
+      // Hide all tabs
+      document.querySelectorAll('#page-leaderboard .tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Remove active class from all buttons
+      tabButtons.forEach(b => b.classList.remove('active'));
+      
+      // Show selected tab
+      const selectedTab = document.getElementById('page-leaderboard').querySelector(`#tab-${tabName}`);
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
+      }
+      
+      // Add active class to clicked button
+      this.classList.add('active');
+    });
+  });
 }
 
 async function updateDailyLeaderboard() {
