@@ -323,6 +323,26 @@ class SupabaseClient {
       throw error;
     }
   }
+
+  async getChallengeParticipants(challengeId) {
+    let url = `${this.url}/rest/v1/user_challenge_progress?challenge_id=eq.${challengeId}`;
+    const options = {
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+      return result.map(item => ({ email: item.email, ...item })) || [];
+    } catch (error) {
+      console.error('Failed to get challenge participants:', error);
+      return [];
+    }
+  }
 }
 
 // Create global Supabase client instance

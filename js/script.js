@@ -16,7 +16,8 @@ let appState = {
   participants: [],
   inviteCodes: {},
   userPasswords: {}, // Store user passwords
-  challenges: [] // Store created challenges
+  challenges: [], // Store created challenges
+  selectedChallengeFilter: null // Track selected challenge for leaderboard filtering
 };
 
 // Notification System
@@ -820,6 +821,16 @@ function switchAdminTab(tab) {
 
 async function loadLeaderboardPage() {
   // Load and display leaderboard on the dedicated leaderboard page
+  
+  // Show challenge selector for logged-in users
+  if (appState.currentUser) {
+    const challengeSelector = document.getElementById('challengeSelector');
+    if (challengeSelector) challengeSelector.style.display = 'block';
+    
+    // Populate challenges dropdown
+    await populateLeaderboardChallengesDropdown();
+  }
+  
   await updateLeaderboard();
   setupLeaderboardTabs();
 }
@@ -862,7 +873,16 @@ async function updateDailyLeaderboard() {
   try {
     const today = new Date().toISOString().split('T')[0];
     const allSubmissions = await supabase.getSubmissions();
-    const todaySubmissions = allSubmissions.filter(s => {
+    
+    // Filter by challenge if selected
+    let submissions = allSubmissions;
+    if (appState.selectedChallengeFilter) {
+      const challengeUsers = await supabase.getChallengeParticipants(appState.selectedChallengeFilter);
+      const userEmails = challengeUsers.map(u => u.email);
+      submissions = submissions.filter(s => userEmails.includes(s.email));
+    }
+    
+    const todaySubmissions = submissions.filter(s => {
       const submissionDate = (s.submission_date || s.date).split('T')[0];
       return submissionDate === today;
     });
@@ -883,7 +903,16 @@ async function updateWeeklyLeaderboard() {
     const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
     const allSubmissions = await supabase.getSubmissions();
-    const weeklySubmissions = allSubmissions.filter(s => {
+    
+    // Filter by challenge if selected
+    let submissions = allSubmissions;
+    if (appState.selectedChallengeFilter) {
+      const challengeUsers = await supabase.getChallengeParticipants(appState.selectedChallengeFilter);
+      const userEmails = challengeUsers.map(u => u.email);
+      submissions = submissions.filter(s => userEmails.includes(s.email));
+    }
+    
+    const weeklySubmissions = submissions.filter(s => {
       const submissionDate = (s.submission_date || s.date).split('T')[0];
       return submissionDate >= weekAgoStr;
     });
@@ -910,7 +939,16 @@ async function updateWeeklyLeaderboard() {
 async function updateOverallLeaderboard() {
   try {
     const allSubmissions = await supabase.getSubmissions();
-    const rankings = calculateOverallRankings(allSubmissions);
+    
+    // Filter by challenge if selected
+    let submissions = allSubmissions;
+    if (appState.selectedChallengeFilter) {
+      const challengeUsers = await supabase.getChallengeParticipants(appState.selectedChallengeFilter);
+      const userEmails = challengeUsers.map(u => u.email);
+      submissions = submissions.filter(s => userEmails.includes(s.email));
+    }
+    
+    const rankings = calculateOverallRankings(submissions);
     renderLeaderboard('overallLeaderboard', rankings.slice(0, 10), 'steps');
   } catch (error) {
     console.error('Error updating overall leaderboard:', error);
@@ -1403,5 +1441,48 @@ function closeAssignUsersModal() {
   document.getElementById('assignUsersModal').style.display = 'none';
   currentChallengeId = null;
   selectedUsersForChallenge.clear();
+}
+
+// Leaderboard Challenge Filter Functions
+async function populateLeaderboardChallengesDropdown() {
+  try {
+    const select = document.getElementById('leaderboardChallengeSelect');
+    if (!select) return;
+    
+    // Fetch user's challenges
+    let userChallenges = [];
+    try {
+      userChallenges = await supabase.getUserChallenges(appState.currentUser);
+    } catch (err) {
+      console.warn('Failed to fetch user challenges from Supabase:', err);
+      // Fall back to checking all challenges for users
+      userChallenges = appState.challenges || [];
+    }
+    
+    // Clear existing options except the first one
+    while (select.options.length > 1) {
+      select.remove(1);
+    }
+    
+    // Add user's challenges
+    if (userChallenges && userChallenges.length > 0) {
+      userChallenges.forEach(challenge => {
+        const option = document.createElement('option');
+        option.value = challenge.id || challenge.name;
+        option.textContent = challenge.name;
+        select.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Error populating challenges dropdown:', error);
+  }
+}
+
+async function updateChallengeLeaderboard(challengeId) {
+  // Update the selected challenge filter
+  appState.selectedChallengeFilter = challengeId || null;
+  
+  // Refresh all leaderboard tabs
+  await updateLeaderboard();
 }
 

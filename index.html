@@ -262,6 +262,14 @@
                 <button class="tab-btn" data-tab="overall">Overall</button>
             </div>
 
+            <!-- Challenge Selector Dropdown (for logged-in users) -->
+            <div id="challengeSelector" style="margin-bottom: 1.5rem; display: none;">
+                <label for="leaderboardChallengeSelect" style="margin-right: 1rem; font-weight: 500;">Select Challenge:</label>
+                <select id="leaderboardChallengeSelect" onchange="updateChallengeLeaderboard(this.value)" style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; min-width: 250px;">
+                    <option value="">-- All Challenges --</option>
+                </select>
+            </div>
+
             <div id="tab-daily" class="tab-content active">
                 <h3>Today's Top Performers</h3>
                 <div id="dailyLeaderboard" class="leaderboard-list"></div>
