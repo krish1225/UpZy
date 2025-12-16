@@ -113,6 +113,12 @@ function setupEventListeners() {
     signupForm.addEventListener('submit', handleSignup);
   }
 
+  // Forgot Password Form
+  const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener('submit', handleForgotPassword);
+  }
+
   // Join with Code Form
   const joinWithCodeForm = document.getElementById('joinWithCodeForm');
   if (joinWithCodeForm) {
@@ -247,17 +253,24 @@ function updateUIState() {
 // AUTHENTICATION
 // ============================================
 
-// Tab switching for login/signup
+// Tab switching for login/signup/forgot
 function switchAuthTab(tab) {
   const loginForm = document.getElementById('loginForm');
   const signupForm = document.getElementById('signupForm');
+  const forgotForm = document.getElementById('forgotPasswordForm');
 
   if (tab === 'login') {
     loginForm.style.display = 'block';
     signupForm.style.display = 'none';
-  } else {
+    forgotForm.style.display = 'none';
+  } else if (tab === 'signup') {
     loginForm.style.display = 'none';
     signupForm.style.display = 'block';
+    forgotForm.style.display = 'none';
+  } else if (tab === 'forgot') {
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'none';
+    forgotForm.style.display = 'block';
   }
 }
 
@@ -340,6 +353,48 @@ function handleSignup(e) {
   setTimeout(() => {
     document.getElementById('joinCodeEmail').value = email;
     showPage('join-with-code');
+  }, 500);
+}
+
+// Handle forgot password
+function handleForgotPassword(e) {
+  e.preventDefault();
+  const email = document.getElementById('forgotEmail').value.trim();
+  const password = document.getElementById('forgotPassword').value;
+  const passwordConfirm = document.getElementById('forgotPasswordConfirm').value;
+
+  if (!appState.userPasswords) {
+    appState.userPasswords = {};
+  }
+
+  // Check if email exists
+  if (!appState.userPasswords[email]) {
+    showNotification('Email not found. Please sign up first.', 'error');
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    showNotification('Passwords do not match', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showNotification('Password must be at least 6 characters', 'error');
+    return;
+  }
+
+  // Update password
+  appState.userPasswords[email] = password;
+  saveAppState();
+
+  showNotification('✅ Password reset successfully!', 'success');
+  document.getElementById('forgotEmail').value = '';
+  document.getElementById('forgotPassword').value = '';
+  document.getElementById('forgotPasswordConfirm').value = '';
+
+  // Go back to login
+  setTimeout(() => {
+    switchAuthTab('login');
   }, 500);
 }
 
