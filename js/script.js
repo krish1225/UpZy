@@ -1060,9 +1060,11 @@ async function loadChallengesTable() {
             <td><span class="status-badge">${enrolledCount}</span></td>
             <td><span class="status-badge status-${challenge.status || 'active'}">${(challenge.status || 'active').charAt(0).toUpperCase() + (challenge.status || 'active').slice(1)}</span></td>
             <td>
-              <button onclick="openAssignUsersModal('${challenge.id || challenge.name}', '${challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-right: 0.25rem; background: var(--primary-color);">Assign</button>
-              <button onclick="editChallenge('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-right: 0.25rem;">Edit</button>
-              <button onclick="viewChallengeUsers('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Users</button>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button onclick="openAssignUsersModal('${challenge.id || challenge.name}', '${challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Assign</button>
+                <button onclick="editChallenge('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Edit</button>
+                <button onclick="viewChallengeUsers('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Users</button>
+              </div>
             </td>
           </tr>
         `;
