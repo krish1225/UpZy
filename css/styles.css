@@ -179,7 +179,7 @@ p {
 /* Hero Section */
 .hero {
   text-align: center;
-  padding: 60px 20px;
+  padding: 30px 20px;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   border-radius: 12px;
@@ -188,13 +188,15 @@ p {
 
 .hero h1 {
   color: white;
-  font-size: 3.5rem;
+  font-size: 2.5rem;
+  margin: 0.5rem 0;
 }
 
 .hero p {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1.3rem;
-  margin-bottom: 2rem;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .hero-buttons {
