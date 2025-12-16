@@ -217,7 +217,7 @@ function showPage(pageName) {
   } else if (pageName === 'dashboard' && appState.currentUser) {
     updateDashboard();
   } else if (pageName === 'leaderboard') {
-    updateLeaderboard();
+    updateLeaderboard().catch(err => console.error('Error loading leaderboard:', err));
   } else if (pageName === 'admin') {
     if (!appState.isAdmin) {
       showNotification('Admin access required', 'error');
@@ -590,33 +590,42 @@ function handleSetupPassword(e) {
 // DASHBOARD
 // ============================================
 
-function updateDashboard() {
+async function updateDashboard() {
   if (!appState.currentUser) return;
 
   const email = appState.currentUser;
   document.getElementById('userNameDisplay').textContent = email.split('@')[0];
 
-  // Calculate stats
-  const userSubmissions = appState.submissions.filter(s => s.email === email);
-  const totalSteps = userSubmissions.reduce((sum, s) => sum + s.steps, 0);
-  const totalCalories = userSubmissions.reduce((sum, s) => sum + s.calories, 0);
-  const streak = calculateStreak(email);
+  try {
+    // Fetch user submissions from Supabase
+    const userSubmissions = await supabase.getUserSubmissions(email);
+    
+    const totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
+    const totalCalories = userSubmissions.reduce((sum, s) => sum + (s.calories || 0), 0);
+    
+    // Calculate streak based on submissions
+    const streak = calculateStreak(email, userSubmissions);
 
-  document.getElementById('totalSteps').textContent = totalSteps.toLocaleString();
-  document.getElementById('totalCalories').textContent = totalCalories.toLocaleString();
-  document.getElementById('streak').textContent = streak;
+    document.getElementById('totalSteps').textContent = totalSteps.toLocaleString();
+    document.getElementById('totalCalories').textContent = totalCalories.toLocaleString();
+    document.getElementById('streak').textContent = streak;
 
-  // Calculate rank
-  const rankings = calculateOverallRankings();
-  const userRank = rankings.findIndex(r => r.email === email) + 1;
-  document.getElementById('currentRank').textContent = userRank > 0 ? `#${userRank}` : '-';
+    // Calculate rank - fetch all submissions from Supabase
+    const allSubmissions = await supabase.getSubmissions();
+    const rankings = calculateOverallRankings(allSubmissions);
+    const userRank = rankings.findIndex(r => r.email === email) + 1;
+    document.getElementById('currentRank').textContent = userRank > 0 ? `#${userRank}` : '-';
 
-  // Days remaining
-  const startDate = new Date(CONFIG.CHALLENGE_START_DATE);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + CONFIG.CHALLENGE_DURATION);
-  const daysRemaining = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-  document.getElementById('daysRemaining').textContent = `${Math.max(0, daysRemaining)} days remaining`;
+    // Days remaining
+    const startDate = new Date(CONFIG.CHALLENGE_START_DATE);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + CONFIG.CHALLENGE_DURATION);
+    const daysRemaining = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+    document.getElementById('daysRemaining').textContent = `${Math.max(0, daysRemaining)} days remaining`;
+  } catch (error) {
+    console.error('Error updating dashboard:', error);
+    showNotification('Error loading dashboard data', 'error');
+  }
 }
 
 async function handleSubmission(e) {
@@ -691,64 +700,84 @@ function switchTab(tab) {
   updateLeaderboard();
 }
 
-function updateLeaderboard() {
-  updateDailyLeaderboard();
-  updateWeeklyLeaderboard();
-  updateOverallLeaderboard();
-  updateProgressChart();
+async function updateLeaderboard() {
+  await updateDailyLeaderboard();
+  await updateWeeklyLeaderboard();
+  await updateOverallLeaderboard();
+  await updateProgressChart();
 }
 
-function updateDailyLeaderboard() {
-  const today = new Date().toISOString().split('T')[0];
-  const todaySubmissions = appState.submissions.filter(s => s.date === today);
-  const dailyRankings = todaySubmissions
-    .sort((a, b) => b.steps - a.steps)
-    .slice(0, 10);
+async function updateDailyLeaderboard() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const allSubmissions = await supabase.getSubmissions();
+    const todaySubmissions = allSubmissions.filter(s => {
+      const submissionDate = (s.submission_date || s.date).split('T')[0];
+      return submissionDate === today;
+    });
+    const dailyRankings = todaySubmissions
+      .sort((a, b) => (b.steps || 0) - (a.steps || 0))
+      .slice(0, 10);
 
-  renderLeaderboard('dailyLeaderboard', dailyRankings, 'steps');
+    renderLeaderboard('dailyLeaderboard', dailyRankings, 'steps');
+  } catch (error) {
+    console.error('Error updating daily leaderboard:', error);
+  }
 }
 
-function updateWeeklyLeaderboard() {
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekAgoStr = weekAgo.toISOString().split('T')[0];
+async function updateWeeklyLeaderboard() {
+  try {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
-  const weeklySubmissions = appState.submissions.filter(
-    s => s.date >= weekAgoStr
-  );
+    const allSubmissions = await supabase.getSubmissions();
+    const weeklySubmissions = allSubmissions.filter(s => {
+      const submissionDate = (s.submission_date || s.date).split('T')[0];
+      return submissionDate >= weekAgoStr;
+    });
 
-  const weeklyByEmail = {};
-  weeklySubmissions.forEach(s => {
-    if (!weeklyByEmail[s.email]) {
-      weeklyByEmail[s.email] = { email: s.email, steps: 0, calories: 0 };
-    }
-    weeklyByEmail[s.email].steps += s.steps;
-    weeklyByEmail[s.email].calories += s.calories;
-  });
+    const weeklyByEmail = {};
+    weeklySubmissions.forEach(s => {
+      if (!weeklyByEmail[s.email]) {
+        weeklyByEmail[s.email] = { email: s.email, steps: 0, calories: 0 };
+      }
+      weeklyByEmail[s.email].steps += (s.steps || 0);
+      weeklyByEmail[s.email].calories += (s.calories || 0);
+    });
 
-  const weeklyRankings = Object.values(weeklyByEmail)
-    .sort((a, b) => b.steps - a.steps)
-    .slice(0, 10);
+    const weeklyRankings = Object.values(weeklyByEmail)
+      .sort((a, b) => b.steps - a.steps)
+      .slice(0, 10);
 
-  renderLeaderboard('weeklyLeaderboard', weeklyRankings, 'steps');
+    renderLeaderboard('weeklyLeaderboard', weeklyRankings, 'steps');
+  } catch (error) {
+    console.error('Error updating weekly leaderboard:', error);
+  }
 }
 
-function updateOverallLeaderboard() {
-  const rankings = calculateOverallRankings();
-  renderLeaderboard('overallLeaderboard', rankings.slice(0, 10), 'steps');
+async function updateOverallLeaderboard() {
+  try {
+    const allSubmissions = await supabase.getSubmissions();
+    const rankings = calculateOverallRankings(allSubmissions);
+    renderLeaderboard('overallLeaderboard', rankings.slice(0, 10), 'steps');
+  } catch (error) {
+    console.error('Error updating overall leaderboard:', error);
+  }
 }
 
-function calculateOverallRankings() {
+function calculateOverallRankings(submissions = null) {
+  const data = submissions || appState.submissions;
   const byEmail = {};
-  appState.submissions.forEach(s => {
+  data.forEach(s => {
     if (!byEmail[s.email]) {
       byEmail[s.email] = { email: s.email, steps: 0, calories: 0 };
     }
-    byEmail[s.email].steps += s.steps;
-    byEmail[s.email].calories += s.calories;
+    byEmail[s.email].steps += (s.steps || 0);
+    byEmail[s.email].calories += (s.calories || 0);
   });
 
-  return Object.values(byEmail).sort((a, b) => b.steps - a.steps);
+  return Object.values(byEmail).sort((a, b) => b.steps - a.stats);
 }
 
 function renderLeaderboard(elementId, rankings, metric = 'steps') {
@@ -873,13 +902,13 @@ async function updateAdminPanel() {
 // UTILITIES
 // ============================================
 
-function calculateStreak(email) {
+function calculateStreak(email, userSubmissions = null) {
   let streak = 0;
-  const submissions = appState.submissions.filter(s => s.email === email);
+  const submissions = userSubmissions || appState.submissions.filter(s => s.email === email);
   
   if (submissions.length === 0) return 0;
 
-  const dates = submissions.map(s => new Date(s.date)).sort((a, b) => b - a);
+  const dates = submissions.map(s => new Date(s.submission_date || s.date)).sort((a, b) => b - a);
   let currentDate = new Date();
   currentDate.setHours(0, 0, 0, 0);
 
@@ -904,36 +933,38 @@ function updateDateTime() {
   }, 60000);
 }
 
-function updateProgressChart() {
+async function updateProgressChart() {
   const ctx = document.getElementById('progressChart');
   if (!ctx) return;
 
-  const rankings = calculateOverallRankings();
-  const top5 = rankings.slice(0, 5);
+  try {
+    const allSubmissions = await supabase.getSubmissions();
+    const rankings = calculateOverallRankings(allSubmissions);
+    const top5 = rankings.slice(0, 5);
 
-  if (window.progressChartInstance) {
-    window.progressChartInstance.destroy();
-  }
+    if (window.progressChartInstance) {
+      window.progressChartInstance.destroy();
+    }
 
-  window.progressChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: top5.map(r => r.email.split('@')[0]),
-      datasets: [
-        {
-          label: 'Total Steps',
-          data: top5.map(r => r.steps),
-          backgroundColor: '#4f46e5',
-          borderColor: '#4338ca',
-          borderWidth: 1
-        },
-        {
-          label: 'Total Calories',
-          data: top5.map(r => r.calories),
-          backgroundColor: '#06b6d4',
-          borderColor: '#0891b2',
-          borderWidth: 1
-        }
+    window.progressChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: top5.map(r => r.email.split('@')[0]),
+        datasets: [
+          {
+            label: 'Total Steps',
+            data: top5.map(r => r.steps),
+            backgroundColor: '#4f46e5',
+            borderColor: '#4338ca',
+            borderWidth: 1
+          },
+          {
+            label: 'Total Calories',
+            data: top5.map(r => r.calories),
+            backgroundColor: '#06b6d4',
+            borderColor: '#0891b2',
+            borderWidth: 1
+          }
       ]
     },
     options: {
@@ -951,5 +982,8 @@ function updateProgressChart() {
       }
     }
   });
+  } catch (error) {
+    console.error('Error updating progress chart:', error);
+  }
 }
 
