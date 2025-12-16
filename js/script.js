@@ -424,6 +424,22 @@ async function handleJoinWithCode(e) {
       return;
     }
 
+    // Check if user already exists
+    const existingUser = await supabase.getUser(email);
+    
+    if (!existingUser) {
+      // Generate temporary password for new user
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
+      // Create user in Supabase
+      try {
+        await supabase.createUser(email, tempPassword);
+      } catch (error) {
+        // User might already exist, continue
+        console.log('User creation note:', error);
+      }
+    }
+
     // Try to add participant to Supabase (ignore if already exists)
     try {
       await supabase.addParticipant(email);
