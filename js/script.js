@@ -52,6 +52,12 @@ function loadAppState() {
   const saved = localStorage.getItem('stepChallengeState');
   if (saved) {
     appState = JSON.parse(saved);
+    // Ensure all required properties exist
+    if (!appState.challenges) appState.challenges = [];
+    if (!appState.submissions) appState.submissions = [];
+    if (!appState.participants) appState.participants = [];
+    if (!appState.inviteCodes) appState.inviteCodes = {};
+    if (!appState.userPasswords) appState.userPasswords = {};
   } else {
     saveAppState();
   }
@@ -972,6 +978,9 @@ async function handleCreateChallenge(e) {
   }
   
   try {
+    // Ensure challenges array exists
+    if (!appState.challenges) appState.challenges = [];
+    
     // Create in local state
     const challenge = {
       id: Date.now().toString(),
@@ -996,7 +1005,8 @@ async function handleCreateChallenge(e) {
     showNotification('✅ Challenge created successfully!', 'success');
     
     // Reset form
-    document.getElementById('createChallengeForm').reset();
+    const form = document.getElementById('createChallengeForm');
+    if (form) form.reset();
     
     // Reload challenges list and table
     loadChallengesTable();
