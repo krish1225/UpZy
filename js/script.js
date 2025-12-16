@@ -257,15 +257,31 @@ function showHomeContent() {
 
 // Update UI based on authentication
 function updateUIState() {
-  // Note: navbar and logoutBtn removed from UI, so we skip those updates
-  
+  // Update bottom navigation based on auth state
+  const leaderboardNav = document.getElementById('leaderboardNav');
+  const adminNav = document.getElementById('adminNav');
+  const logoutNavBtn = document.getElementById('logoutNavBtn');
+
   if (appState.currentUser) {
+    // Show leaderboard and logout for logged-in users
+    if (leaderboardNav) leaderboardNav.style.display = 'flex';
+    if (logoutNavBtn) logoutNavBtn.style.display = 'flex';
+    
     document.querySelectorAll('[data-page="dashboard"]').forEach(el => el.style.display = '');
     document.querySelectorAll('[data-page="leaderboard"]').forEach(el => el.style.display = '');
+  } else {
+    // Hide leaderboard and logout for non-logged-in users
+    if (leaderboardNav) leaderboardNav.style.display = 'none';
+    if (logoutNavBtn) logoutNavBtn.style.display = 'none';
   }
 
   if (appState.isAdmin) {
+    // Show admin for admins
+    if (adminNav) adminNav.style.display = 'flex';
     document.querySelectorAll('[data-page="admin"]').forEach(el => el.style.display = '');
+  } else {
+    // Hide admin for non-admins
+    if (adminNav) adminNav.style.display = 'none';
   }
 
   // Update home page leaderboard visibility

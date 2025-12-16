@@ -307,6 +307,26 @@
 
     </div>
 
+    <!-- Bottom Navigation Menu -->
+    <div class="bottom-nav">
+        <button class="nav-item" onclick="showPage('home')" title="Home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" id="leaderboardNav" onclick="showPage('leaderboard')" style="display:none;" title="Leaderboard">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Leaderboard</span>
+        </button>
+        <button class="nav-item" id="adminNav" onclick="showPage('admin')" style="display:none;" title="Admin">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Admin</span>
+        </button>
+        <button class="nav-item" id="logoutNavBtn" onclick="logout()" style="display:none;" title="Logout">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-label">Logout</span>
+        </button>
+    </div>
+
     <!-- Notification System -->
     <div id="notification" class="notification" style="display: none;"></div>
 
