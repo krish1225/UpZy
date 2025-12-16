@@ -269,7 +269,35 @@
             <div class="admin-panel">
                 <h2>Admin Panel</h2>
                 
-                <div class="admin-section">
+                <!-- Admin Tabs -->
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" data-admin-tab="challenges">Challenges</button>
+                    <button class="admin-tab-btn" data-admin-tab="participants">Participants</button>
+                    <button class="admin-tab-btn" data-admin-tab="invites">Invites</button>
+                </div>
+
+                <!-- Challenges Tab -->
+                <div id="admin-tab-challenges" class="admin-tab-content active">
+                    <h3>Challenge Settings</h3>
+                    <div class="form-group">
+                        <label>Challenge Duration (days)</label>
+                        <input type="number" id="challengeDuration" value="30" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Challenge Start Date</label>
+                        <input type="date" id="challengeStartDate">
+                    </div>
+                    <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
+                </div>
+
+                <!-- Participants Tab -->
+                <div id="admin-tab-participants" class="admin-tab-content" style="display:none;">
+                    <h3>All Participants</h3>
+                    <div id="participantsList" class="participants-list"></div>
+                </div>
+
+                <!-- Invites Tab -->
+                <div id="admin-tab-invites" class="admin-tab-content" style="display:none;">
                     <h3>Generate Invite Codes</h3>
                     <form id="inviteForm">
                         <div class="form-group">
@@ -283,24 +311,6 @@
                         <p>Share this code with: <strong id="emailDisplay"></strong></p>
                         <button onclick="copyInvite()" class="btn btn-secondary">Copy</button>
                     </div>
-                </div>
-
-                <div class="admin-section">
-                    <h3>Challenge Settings</h3>
-                    <div class="form-group">
-                        <label>Challenge Duration (days)</label>
-                        <input type="number" id="challengeDuration" value="30" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>Challenge Start Date</label>
-                        <input type="date" id="challengeStartDate">
-                    </div>
-                    <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
-                </div>
-
-                <div class="admin-section">
-                    <h3>All Participants</h3>
-                    <div id="participantsList" class="participants-list"></div>
                 </div>
             </div>
         </div>

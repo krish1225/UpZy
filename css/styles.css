@@ -378,6 +378,44 @@ p {
   border-color: var(--primary-color);
 }
 
+/* Admin Tabs */
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--light-bg);
+}
+
+.admin-tab-btn {
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-secondary);
+}
+
+.admin-tab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.admin-tab-btn:hover {
+  color: var(--primary-color);
+}
+
+.admin-tab-content {
+  display: none;
+  padding: 2rem 0;
+}
+
+.admin-tab-content.active {
+  display: block;
+}
+
 .tab-content {
   margin-bottom: 2rem;
 }

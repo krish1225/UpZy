@@ -159,6 +159,16 @@ function setupEventListeners() {
     });
   });
 
+  // Admin Tabs
+  const adminTabBtns = document.querySelectorAll('.admin-tab-btn');
+  adminTabBtns.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const tab = this.getAttribute('data-admin-tab');
+      switchAdminTab(tab);
+    });
+  });
+
   // Set today's date as default
   const dateInput = document.getElementById('dateInput');
   if (dateInput) {
@@ -742,6 +752,29 @@ function switchTab(tab) {
 
   // Update leaderboard
   updateLeaderboard();
+}
+
+function switchAdminTab(tab) {
+  // Hide all admin tabs
+  document.querySelectorAll('.admin-tab-content').forEach(content => {
+    content.classList.remove('active');
+    content.style.display = 'none';
+  });
+
+  // Show selected admin tab
+  const adminTab = document.getElementById(`admin-tab-${tab}`);
+  if (adminTab) {
+    adminTab.classList.add('active');
+    adminTab.style.display = 'block';
+  }
+
+  // Update active button
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.adminTab === tab) {
+      btn.classList.add('active');
+    }
+  });
 }
 
 async function updateLeaderboard() {
