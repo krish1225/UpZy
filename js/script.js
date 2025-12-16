@@ -65,7 +65,7 @@ function saveAppState() {
 function setupEventListeners() {
   console.log('Setting up event listeners...');
   
-  // Navigation links
+  // Navigation links (removed from UI, but keep code for reference)
   const navLinks = document.querySelectorAll('.nav-link');
   console.log('Found nav links:', navLinks.length);
   
@@ -95,7 +95,7 @@ function setupEventListeners() {
     });
   });
 
-  // Logout button
+  // Logout button (removed from UI, but keep code for reference)
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', logout);
@@ -257,15 +257,8 @@ function showHomeContent() {
 
 // Update UI based on authentication
 function updateUIState() {
-  const logoutBtn = document.getElementById('logoutBtn');
-  const navLinks = document.getElementById('navLinks');
-
-  if (appState.currentUser || appState.isAdmin) {
-    logoutBtn.style.display = 'block';
-  } else {
-    logoutBtn.style.display = 'none';
-  }
-
+  // Note: navbar and logoutBtn removed from UI, so we skip those updates
+  
   if (appState.currentUser) {
     document.querySelectorAll('[data-page="dashboard"]').forEach(el => el.style.display = '');
     document.querySelectorAll('[data-page="leaderboard"]').forEach(el => el.style.display = '');
@@ -276,7 +269,8 @@ function updateUIState() {
   }
 
   // Update home page leaderboard visibility
-  if (document.getElementById('page-home').style.display !== 'none') {
+  const homePage = document.getElementById('page-home');
+  if (homePage && homePage.style.display !== 'none') {
     showHomeContent();
   }
 }
