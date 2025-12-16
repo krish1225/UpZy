@@ -213,10 +213,11 @@ function showPage(pageName) {
   // Load page-specific data
   if (pageName === 'login-signup') {
     switchAuthTab('login');
+  } else if (pageName === 'home') {
+    // Show leaderboard on home page for logged-in users
+    showHomeContent();
   } else if (pageName === 'dashboard' && appState.currentUser) {
     updateDashboard();
-  } else if (pageName === 'leaderboard') {
-    updateLeaderboard().catch(err => console.error('Error loading leaderboard:', err));
   } else if (pageName === 'admin') {
     if (!appState.isAdmin) {
       showNotification('Admin access required', 'error');
@@ -224,6 +225,23 @@ function showPage(pageName) {
       return;
     }
     updateAdminPanel().catch(err => console.error('Error loading admin panel:', err));
+  }
+}
+
+// Show appropriate content on home page
+function showHomeContent() {
+  const heroSection = document.getElementById('hero-section');
+  const leaderboardSection = document.getElementById('leaderboard-section');
+
+  if (appState.currentUser || appState.isAdmin) {
+    // Hide hero, show leaderboard
+    if (heroSection) heroSection.style.display = 'none';
+    if (leaderboardSection) leaderboardSection.style.display = 'block';
+    updateLeaderboard().catch(err => console.error('Error loading leaderboard:', err));
+  } else {
+    // Show hero, hide leaderboard
+    if (heroSection) heroSection.style.display = 'block';
+    if (leaderboardSection) leaderboardSection.style.display = 'none';
   }
 }
 
@@ -245,6 +263,11 @@ function updateUIState() {
 
   if (appState.isAdmin) {
     document.querySelectorAll('[data-page="admin"]').forEach(el => el.style.display = '');
+  }
+
+  // Update home page leaderboard visibility
+  if (document.getElementById('page-home').style.display !== 'none') {
+    showHomeContent();
   }
 }
 
@@ -575,6 +598,7 @@ function logout() {
   saveAppState();
   updateUIState();
   showPage('home');
+  showHomeContent();
 }
 
 function handleSetupPassword(e) {
