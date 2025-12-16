@@ -182,6 +182,11 @@ function setupEventListeners() {
 function showPage(pageName) {
   console.log('Switching to page:', pageName);
   
+  // Redirect to dashboard if user clicks 'home' while logged in
+  if (pageName === 'home' && (appState.currentUser || appState.isAdmin)) {
+    pageName = 'dashboard';
+  }
+  
   // Hide all pages
   const allPages = document.querySelectorAll('.page');
   console.log('Found pages:', allPages.length);
