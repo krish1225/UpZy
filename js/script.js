@@ -15,21 +15,32 @@ let appState = {
   isAdmin: false,
   submissions: [],
   participants: [],
-  inviteCodes: {}
+  inviteCodes: {},
+  userPasswords: {} // Store user passwords
 };
+
+// Notification System
+function showNotification(message, type = 'success') {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.style.display = 'block';
+  
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    notification.classList.add('hide');
+    setTimeout(() => {
+      notification.style.display = 'none';
+      notification.classList.remove('hide');
+    }, 300);
+  }, 3000);
+}
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
   console.log('App initializing...');
   loadAppState();
   setupEventListeners();
-  
-  // Initialize Google Auth
-  setTimeout(() => {
-    if (typeof google !== 'undefined') {
-      initializeGoogleAuth();
-    }
-  }, 500);
   
   showPage('home');
   updateDateTime();
@@ -66,12 +77,21 @@ function setupEventListeners() {
       console.log('Nav click:', page);
       
       // Check permissions
-      if (page === 'home' || page === 'admin-login') {
+      if (page === 'home') {
+        showPage(page);
+      } else if (page === 'admin') {
+        // Admin page - redirect to login if not admin
+        if (appState.isAdmin) {
+          showPage(page);
+        } else {
+          showPage('admin-login');
+        }
+      } else if (page === 'admin-login') {
         showPage(page);
       } else if (appState.currentUser || appState.isAdmin) {
         showPage(page);
       } else {
-        alert('Please join or login first');
+        showNotification('Please join or login first', 'error');
       }
     });
   });
@@ -82,16 +102,33 @@ function setupEventListeners() {
     logoutBtn.addEventListener('click', logout);
   }
 
-  // Join Form
-  const joinForm = document.getElementById('joinForm');
-  if (joinForm) {
-    joinForm.addEventListener('submit', handleJoin);
+  // Login/Signup Forms
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+
+  const signupForm = document.getElementById('signupForm');
+  if (signupForm) {
+    signupForm.addEventListener('submit', handleSignup);
+  }
+
+  // Join with Code Form
+  const joinWithCodeForm = document.getElementById('joinWithCodeForm');
+  if (joinWithCodeForm) {
+    joinWithCodeForm.addEventListener('submit', handleJoinWithCode);
   }
 
   // Admin Login Form
   const adminLoginForm = document.getElementById('adminLoginForm');
   if (adminLoginForm) {
     adminLoginForm.addEventListener('submit', handleAdminLogin);
+  }
+
+  // Setup Password Form
+  const setupPasswordForm = document.getElementById('setupPasswordForm');
+  if (setupPasswordForm) {
+    setupPasswordForm.addEventListener('submit', handleSetupPassword);
   }
 
   // Submit Form
@@ -169,13 +206,15 @@ function showPage(pageName) {
   updateUIState();
 
   // Load page-specific data
-  if (pageName === 'dashboard' && appState.currentUser) {
+  if (pageName === 'login-signup') {
+    switchAuthTab('login');
+  } else if (pageName === 'dashboard' && appState.currentUser) {
     updateDashboard();
   } else if (pageName === 'leaderboard') {
     updateLeaderboard();
   } else if (pageName === 'admin') {
     if (!appState.isAdmin) {
-      alert('Admin access required');
+      showNotification('Admin access required', 'error');
       showPage('home');
       return;
     }
@@ -208,6 +247,143 @@ function updateUIState() {
 // AUTHENTICATION
 // ============================================
 
+// Tab switching for login/signup
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+
+  if (tab === 'login') {
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+  } else {
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+  }
+}
+
+// Handle login
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!appState.userPasswords) {
+    appState.userPasswords = {};
+  }
+
+  // Check if email exists and password matches
+  if (!appState.userPasswords[email]) {
+    showNotification('Email not found. Please sign up first.', 'error');
+    return;
+  }
+
+  if (appState.userPasswords[email] !== password) {
+    showNotification('Incorrect password', 'error');
+    return;
+  }
+
+  // Login successful
+  appState.currentUser = email;
+  saveAppState();
+  updateUIState();
+
+  showNotification('✅ Login successful!', 'success');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+
+  // Go to invite code page
+  setTimeout(() => {
+    document.getElementById('joinCodeEmail').value = email;
+    showPage('join-with-code');
+  }, 500);
+}
+
+// Handle signup
+function handleSignup(e) {
+  e.preventDefault();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+
+  if (password !== passwordConfirm) {
+    showNotification('Passwords do not match', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showNotification('Password must be at least 6 characters', 'error');
+    return;
+  }
+
+  if (!appState.userPasswords) {
+    appState.userPasswords = {};
+  }
+
+  // Check if email already exists
+  if (appState.userPasswords[email]) {
+    showNotification('Email already exists. Please login instead.', 'error');
+    return;
+  }
+
+  // Create account
+  appState.userPasswords[email] = password;
+  appState.currentUser = email;
+  saveAppState();
+  updateUIState();
+
+  showNotification('✅ Account created successfully!', 'success');
+  document.getElementById('signupEmail').value = '';
+  document.getElementById('signupPassword').value = '';
+  document.getElementById('signupPasswordConfirm').value = '';
+
+  // Go to invite code page
+  setTimeout(() => {
+    document.getElementById('joinCodeEmail').value = email;
+    showPage('join-with-code');
+  }, 500);
+}
+
+// Handle join with invite code
+async function handleJoinWithCode(e) {
+  e.preventDefault();
+  const email = document.getElementById('joinCodeEmail').value.trim();
+  const inviteCode = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+
+  try {
+    // Verify invite code with Supabase
+    const validInvite = await supabase.getInviteCode(inviteCode);
+    
+    if (!validInvite) {
+      showNotification('Invalid invite code. Please check and try again.', 'error');
+      return;
+    }
+
+    // Try to add participant to Supabase (ignore if already exists)
+    try {
+      await supabase.addParticipant(email);
+    } catch (error) {
+      // Ignore duplicate key error - user already exists
+      if (!error.message.includes('duplicate')) {
+        throw error;
+      }
+    }
+    
+    appState.currentUser = email;
+    saveAppState();
+    updateUIState();
+    
+    showNotification('✅ Successfully joined the challenge!', 'success');
+    document.getElementById('joinCodeInput').value = '';
+    
+    setTimeout(() => {
+      showPage('dashboard');
+    }, 500);
+  } catch (error) {
+    console.error('Join error:', error);
+    showNotification('Error joining challenge. Please try again.', 'error');
+  }
+}
+
 async function handleJoin(e) {
   e.preventDefault();
   const email = document.getElementById('joinEmail').value.trim();
@@ -218,24 +394,47 @@ async function handleJoin(e) {
     const validInvite = await supabase.getInviteCode(inviteCode);
     
     if (!validInvite) {
-      alert('Invalid invite code. Please check and try again.');
+      showNotification('Invalid invite code. Please check and try again.', 'error');
       return;
     }
 
-    // Add participant to Supabase
-    await supabase.addParticipant(email);
+    // Initialize userPasswords if not exists
+    if (!appState.userPasswords) {
+      appState.userPasswords = {};
+    }
+
+    // Check if this is a new user (first join)
+    const isNewUser = !appState.userPasswords[email];
+
+    // Try to add participant to Supabase (ignore if already exists)
+    try {
+      await supabase.addParticipant(email);
+    } catch (error) {
+      // Ignore duplicate key error - user already exists
+      if (!error.message.includes('duplicate')) {
+        throw error;
+      }
+    }
     
     appState.currentUser = email;
     saveAppState();
     updateUIState();
-    
-    alert('Successfully joined the challenge!');
-    document.getElementById('joinEmail').value = '';
-    document.getElementById('inviteCode').value = '';
-    showPage('dashboard');
+
+    if (isNewUser) {
+      // First time login - show password setup
+      document.getElementById('setupEmail').value = email;
+      document.getElementById('setupPasswordForm').reset();
+      showPage('setup-password');
+    } else {
+      // Returning user - go to dashboard
+      showNotification('✅ Welcome back!', 'success');
+      document.getElementById('joinEmail').value = '';
+      document.getElementById('inviteCode').value = '';
+      showPage('dashboard');
+    }
   } catch (error) {
     console.error('Join error:', error);
-    alert('Error joining challenge. Please try again.');
+    showNotification('Error joining challenge. Please try again.', 'error');
   }
 }
 
@@ -248,10 +447,10 @@ function handleAdminLogin(e) {
     saveAppState();
     updateUIState();
     document.getElementById('adminPassword').value = '';
-    alert('Admin access granted');
+    showNotification('✅ Admin access granted', 'success');
     showPage('admin');
   } else {
-    alert('Incorrect password');
+    showNotification('Incorrect password', 'error');
   }
 }
 
@@ -262,6 +461,35 @@ function logout() {
   saveAppState();
   updateUIState();
   showPage('home');
+}
+
+function handleSetupPassword(e) {
+  e.preventDefault();
+  const email = document.getElementById('setupEmail').value;
+  const password = document.getElementById('setupPassword').value;
+  const passwordConfirm = document.getElementById('setupPasswordConfirm').value;
+
+  if (password !== passwordConfirm) {
+    showNotification('Passwords do not match', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showNotification('Password must be at least 6 characters', 'error');
+    return;
+  }
+
+  // Store password (in production, this should be hashed on server)
+  appState.userPasswords[email] = password;
+  saveAppState();
+
+  showNotification('✅ Password set successfully!', 'success');
+  document.getElementById('setupPasswordForm').reset();
+  
+  // Go to dashboard
+  setTimeout(() => {
+    showPage('dashboard');
+  }, 500);
 }
 
 // ============================================
@@ -305,7 +533,7 @@ async function handleSubmission(e) {
   const date = document.getElementById('dateInput').value;
 
   if (!appState.currentUser) {
-    alert('Please login first');
+    showNotification('Please login first', 'error');
     return;
   }
 
@@ -331,7 +559,7 @@ async function handleSubmission(e) {
     }
 
     saveAppState();
-    alert('✅ Submission saved!');
+    showNotification('✅ Submission saved!', 'success');
     
     document.getElementById('submitForm').reset();
     const dateInput = document.getElementById('dateInput');
@@ -340,7 +568,7 @@ async function handleSubmission(e) {
     updateDashboard();
   } catch (error) {
     console.error('Submission error:', error);
-    alert('Error saving submission. Please try again.');
+    showNotification('Error saving submission. Please try again.', 'error');
   }
 }
 
@@ -483,14 +711,14 @@ async function handleGenerateInvite(e) {
     document.getElementById('emailForInvite').value = '';
   } catch (error) {
     console.error('Error generating invite:', error);
-    alert('Error generating invite code. Please try again.');
+    showNotification('Error generating invite code. Please try again.', 'error');
   }
 }
 
 function copyInvite() {
   const code = document.getElementById('inviteCodeDisplay').textContent;
   navigator.clipboard.writeText(code);
-  alert('Invite code copied to clipboard!');
+  showNotification('✅ Invite code copied to clipboard!', 'success');
 }
 
 function generateInviteCode() {
@@ -505,7 +733,7 @@ function saveSettings() {
   CONFIG.CHALLENGE_START_DATE = startDate || CONFIG.CHALLENGE_START_DATE;
 
   localStorage.setItem('challengeConfig', JSON.stringify(CONFIG));
-  alert('Settings saved!');
+  showNotification('✅ Settings saved!', 'success');
 }
 
 function updateAdminPanel() {

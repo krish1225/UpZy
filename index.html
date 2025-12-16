@@ -7,7 +7,6 @@
     <title>UpZy</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -36,29 +35,79 @@
                 <h1>Welcome to UpZy</h1>
                 <p>Track your steps and compete with friends</p>
                 <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="showPage('join')">Join Challenge</button>
-                    <button class="btn btn-secondary" onclick="showPage('admin-login')">Admin Access</button>
+                    <button class="btn btn-primary" onclick="showPage('login-signup')">Join Challenge</button>
                 </div>
             </div>
         </div>
 
-        <!-- Join Challenge Page -->
-        <div id="page-join" class="page" style="display:none;">
+        <!-- Login/Signup Page -->
+        <div id="page-login-signup" class="page" style="display:none;">
             <div class="form-container">
-                <h2>Join UpZy</h2>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">Sign in with Google to join the challenge</p>
-                <div id="googleSignIn" style="display: flex; justify-content: center; margin-bottom: 2rem;"></div>
-                
-                <div style="text-align: center; color: var(--text-secondary); margin: 2rem 0;">OR use invite code</div>
-                
-                <form id="joinForm">
+                <!-- Login Form -->
+                <form id="loginForm">
+                    <h2>Join UpZy</h2>
+                    <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">Login to your account</p>
+                    
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" id="joinEmail" required placeholder="your.email@example.com">
+                        <input type="email" id="loginEmail" required placeholder="your.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Continue</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('home')">Back</button>
+                    
+                    <p style="text-align: center; margin-top: 2rem; color: var(--text-secondary);">
+                        Don't have an account? 
+                        <a href="#" onclick="switchAuthTab('signup'); return false;" style="color: var(--primary-color); font-weight: 600;">Sign Up</a>
+                    </p>
+                </form>
+                <!-- Signup Form -->
+                <form id="signupForm" style="display:none;">
+                    <h2>Create Account</h2>
+                    <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">Sign up to join the challenge</p>
+
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="signupEmail" required placeholder="your.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password</label>
+                        <input type="password" id="signupPassword" required placeholder="Enter a strong password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="signupPasswordConfirm" required placeholder="Confirm your password" minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('home')">Back</button>
+                    
+                    <p style="text-align: center; margin-top: 2rem; color: var(--text-secondary);">
+                        Already have an account? 
+                        <a href="#" onclick="switchAuthTab('login'); return false;" style="color: var(--primary-color); font-weight: 600;">Login</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Old duplicate removed -->
+
+        <!-- Join Challenge Page (Invite Code) -->
+        <div id="page-join-with-code" class="page" style="display:none;">
+            <div class="form-container">
+                <h2>Enter Invite Code</h2>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">Enter your invite code to complete joining</p>
+                
+                <form id="joinWithCodeForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="joinCodeEmail" readonly placeholder="your.email@example.com">
                     </div>
                     <div class="form-group">
                         <label>Invite Code</label>
-                        <input type="text" id="inviteCode" required placeholder="Enter your invite code">
+                        <input type="text" id="joinCodeInput" required placeholder="Enter your invite code">
                     </div>
                     <button type="submit" class="btn btn-primary">Join Challenge</button>
                     <button type="button" class="btn btn-secondary" onclick="showPage('home')">Back</button>
@@ -77,6 +126,29 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Login</button>
                     <button type="button" class="btn btn-secondary" onclick="showPage('home')">Back</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Setup Password Page -->
+        <div id="page-setup-password" class="page" style="display:none;">
+            <div class="form-container">
+                <h2>Set Up Your Password</h2>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">Create a password to secure your account</p>
+                <form id="setupPasswordForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="setupEmail" readonly placeholder="your.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password</label>
+                        <input type="password" id="setupPassword" required placeholder="Enter a strong password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="setupPasswordConfirm" required placeholder="Confirm your password" minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Continue</button>
                 </form>
             </div>
         </div>
@@ -200,6 +272,9 @@
         </div>
 
     </div>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification" style="display: none;"></div>
 
     <script src="js/supabase-client.js"></script>
     <script src="js/google-sheets-api.js"></script>
