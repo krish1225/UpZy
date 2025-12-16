@@ -224,7 +224,7 @@ function showPage(pageName) {
       showPage('home');
       return;
     }
-    updateAdminPanel();
+    updateAdminPanel().catch(err => console.error('Error loading admin panel:', err));
   }
 }
 
@@ -791,30 +791,43 @@ function saveSettings() {
   showNotification('✅ Settings saved!', 'success');
 }
 
-function updateAdminPanel() {
+async function updateAdminPanel() {
   // Load settings
   document.getElementById('challengeDuration').value = CONFIG.CHALLENGE_DURATION;
   document.getElementById('challengeStartDate').value = CONFIG.CHALLENGE_START_DATE;
 
-  // Load participants
-  const uniqueEmails = [...new Set(appState.submissions.map(s => s.email))];
-  const participantsList = document.getElementById('participantsList');
+  // Load participants from Supabase
+  try {
+    const allSubmissions = await supabase.getSubmissions();
+    const participantsList = document.getElementById('participantsList');
 
-  if (uniqueEmails.length === 0) {
-    participantsList.innerHTML = '<p>No participants yet</p>';
-    return;
+    if (!allSubmissions || allSubmissions.length === 0) {
+      participantsList.innerHTML = '<p>No participants yet</p>';
+      return;
+    }
+
+    // Group by email
+    const byEmail = {};
+    allSubmissions.forEach(submission => {
+      if (!byEmail[submission.email]) {
+        byEmail[submission.email] = { email: submission.email, steps: 0, submissions: 0 };
+      }
+      byEmail[submission.email].steps += submission.steps || 0;
+      byEmail[submission.email].submissions += 1;
+    });
+
+    participantsList.innerHTML = Object.values(byEmail).map(participant => {
+      return `
+        <div class="participant-card">
+          <div class="participant-email">${participant.email}</div>
+          <div class="participant-status">${participant.submissions} submissions • ${participant.steps.toLocaleString()} steps</div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Error loading admin panel:', error);
+    document.getElementById('participantsList').innerHTML = '<p>Error loading participants</p>';
   }
-
-  participantsList.innerHTML = uniqueEmails.map(email => {
-    const submissions = appState.submissions.filter(s => s.email === email);
-    const totalSteps = submissions.reduce((sum, s) => sum + s.steps, 0);
-    return `
-      <div class="participant-card">
-        <div class="participant-email">${email}</div>
-        <div class="participant-status">${submissions.length} submissions • ${totalSteps.toLocaleString()} steps</div>
-      </div>
-    `;
-  }).join('');
 }
 
 // ============================================
