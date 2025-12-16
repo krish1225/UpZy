@@ -1060,6 +1060,7 @@ async function loadChallengesTable() {
             <td><span class="status-badge">${enrolledCount}</span></td>
             <td><span class="status-badge status-${challenge.status || 'active'}">${(challenge.status || 'active').charAt(0).toUpperCase() + (challenge.status || 'active').slice(1)}</span></td>
             <td>
+              <button onclick="openAssignUsersModal('${challenge.id || challenge.name}', '${challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-right: 0.25rem; background: var(--primary-color);">Assign</button>
               <button onclick="editChallenge('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-right: 0.25rem;">Edit</button>
               <button onclick="viewChallengeUsers('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Users</button>
             </td>
@@ -1307,5 +1308,98 @@ async function updateProgressChart() {
   } catch (error) {
     console.error('Error updating progress chart:', error);
   }
+}
+
+// Assign Users to Challenge Modal Functions
+let currentChallengeId = null;
+let selectedUsersForChallenge = new Set();
+
+async function openAssignUsersModal(challengeId, challengeName) {
+  currentChallengeId = challengeId;
+  selectedUsersForChallenge.clear();
+  
+  // Set challenge name
+  document.getElementById('assignChallengeNameDisplay').textContent = challengeName;
+  
+  // Fetch all users from participants
+  try {
+    let users = [];
+    
+    // Try Supabase first
+    try {
+      users = await supabase.getParticipants();
+    } catch (err) {
+      console.warn('Supabase fetch failed, using local participants:', err);
+      users = appState.participants || [];
+    }
+    
+    // Render users as checkboxes
+    const usersList = document.getElementById('usersList');
+    if (users.length === 0) {
+      usersList.innerHTML = '<p style="text-align: center; color: #999;">No users available</p>';
+    } else {
+      usersList.innerHTML = users
+        .map(user => `
+          <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee;">
+            <input type="checkbox" id="user-${user.email || user}" value="${user.email || user}" 
+                   onchange="toggleUserSelection(this)" style="margin-right: 0.75rem;">
+            <label for="user-${user.email || user}" style="flex: 1; margin: 0; cursor: pointer;">
+              ${user.email || user}
+            </label>
+          </div>
+        `)
+        .join('');
+    }
+    
+    // Show modal
+    document.getElementById('assignUsersModal').style.display = 'block';
+  } catch (error) {
+    console.error('Error loading users:', error);
+    showNotification('Error loading users', 'error');
+  }
+}
+
+function toggleUserSelection(checkbox) {
+  if (checkbox.checked) {
+    selectedUsersForChallenge.add(checkbox.value);
+  } else {
+    selectedUsersForChallenge.delete(checkbox.value);
+  }
+}
+
+async function confirmAssignUsers() {
+  if (selectedUsersForChallenge.size === 0) {
+    showNotification('Please select at least one user', 'error');
+    return;
+  }
+  
+  try {
+    let assignedCount = 0;
+    
+    for (const email of selectedUsersForChallenge) {
+      try {
+        // Add user to challenge
+        await supabase.addUserToChallenge(email, currentChallengeId);
+        assignedCount++;
+      } catch (err) {
+        console.warn(`Failed to assign ${email}:`, err);
+        // Still try others
+      }
+    }
+    
+    showNotification(`✅ Assigned ${assignedCount} user(s) to challenge!`, 'success');
+    closeAssignUsersModal();
+    loadChallengesTable(); // Refresh the table
+    
+  } catch (error) {
+    console.error('Error assigning users:', error);
+    showNotification('Error assigning users', 'error');
+  }
+}
+
+function closeAssignUsersModal() {
+  document.getElementById('assignUsersModal').style.display = 'none';
+  currentChallengeId = null;
+  selectedUsersForChallenge.clear();
 }
 

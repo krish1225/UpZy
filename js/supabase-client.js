@@ -209,6 +209,15 @@ class SupabaseClient {
     }
   }
 
+  // Participants
+  async getParticipants() {
+    return this.request('GET', 'participants');
+  }
+
+  async addParticipant(email) {
+    return this.request('POST', 'participants', { email });
+  }
+
   // Challenges
   async createChallenge(name, duration, startDate, description) {
     return this.request('POST', 'challenges', {

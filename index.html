@@ -400,6 +400,31 @@
 
     </div>
 
+    <!-- Assign Users to Challenge Modal -->
+    <div id="assignUsersModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Assign Users to Challenge</h2>
+                <button class="modal-close" onclick="closeAssignUsersModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Challenge: <strong id="assignChallengeNameDisplay"></strong></label>
+                </div>
+                <div class="form-group">
+                    <label>Select Users to Add:</label>
+                    <div id="usersList" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 1rem;">
+                        <!-- Users will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAssignUsersModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmAssignUsers()">Assign Selected Users</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom Navigation Menu -->
     <div class="bottom-nav">
         <button class="nav-item" onclick="showPage('home')" title="Home">
