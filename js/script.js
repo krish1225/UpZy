@@ -4,7 +4,6 @@
 
 // Configuration
 const CONFIG = {
-  ADMIN_PASSWORD: 'admin123', // Change this to your password
   CHALLENGE_DURATION: 30,
   CHALLENGE_START_DATE: new Date().toISOString().split('T')[0]
 };
@@ -534,18 +533,39 @@ async function handleJoin(e) {
 
 function handleAdminLogin(e) {
   e.preventDefault();
+  const email = document.getElementById('adminEmail').value.trim();
   const password = document.getElementById('adminPassword').value;
 
-  if (password === CONFIG.ADMIN_PASSWORD) {
+  // Check credentials against Supabase
+  supabase.getUser(email).then(user => {
+    if (!user) {
+      showNotification('Email not found', 'error');
+      return;
+    }
+
+    if (user.password !== password) {
+      showNotification('Incorrect password', 'error');
+      return;
+    }
+
+    if (!user.is_admin) {
+      showNotification('Admin access denied', 'error');
+      return;
+    }
+
+    // Admin login successful
+    appState.currentUser = email;
     appState.isAdmin = true;
     saveAppState();
     updateUIState();
+    document.getElementById('adminEmail').value = '';
     document.getElementById('adminPassword').value = '';
     showNotification('✅ Admin access granted', 'success');
     showPage('admin');
-  } else {
-    showNotification('Incorrect password', 'error');
-  }
+  }).catch(err => {
+    console.error('Admin login error:', err);
+    showNotification('Login failed. Please try again.', 'error');
+  });
 }
 
 function logout() {
