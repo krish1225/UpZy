@@ -296,16 +296,51 @@
 
                 <!-- Challenges Tab -->
                 <div id="admin-tab-challenges" class="admin-tab-content active">
-                    <h3>Challenge Settings</h3>
-                    <div class="form-group">
-                        <label>Challenge Duration (days)</label>
-                        <input type="number" id="challengeDuration" value="30" min="1">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <!-- Create Challenge Section -->
+                        <div class="challenge-form-section">
+                            <h3>Create New Challenge</h3>
+                            <form id="createChallengeForm">
+                                <div class="form-group">
+                                    <label>Challenge Name</label>
+                                    <input type="text" id="challengeName" placeholder="e.g., Steps Challenge 2025" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Challenge Duration (days)</label>
+                                    <input type="number" id="newChallengeDuration" value="30" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Start Date</label>
+                                    <input type="date" id="newChallengeStartDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea id="challengeDescription" placeholder="Challenge description..." rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Create Challenge</button>
+                            </form>
+                        </div>
+
+                        <!-- View Challenges Section -->
+                        <div class="challenge-list-section">
+                            <h3>Active Challenges</h3>
+                            <div id="challengesList" class="challenges-list"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Challenge Start Date</label>
-                        <input type="date" id="challengeStartDate">
+
+                    <!-- Legacy Settings (for backward compatibility) -->
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+                        <h3>Current Challenge Settings</h3>
+                        <div class="form-group">
+                            <label>Challenge Duration (days)</label>
+                            <input type="number" id="challengeDuration" value="30" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Challenge Start Date</label>
+                            <input type="date" id="challengeStartDate">
+                        </div>
+                        <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
                     </div>
-                    <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
                 </div>
 
                 <!-- Participants Tab -->

@@ -15,7 +15,8 @@ let appState = {
   submissions: [],
   participants: [],
   inviteCodes: {},
-  userPasswords: {} // Store user passwords
+  userPasswords: {}, // Store user passwords
+  challenges: [] // Store created challenges
 };
 
 // Notification System
@@ -146,6 +147,12 @@ function setupEventListeners() {
   const inviteForm = document.getElementById('inviteForm');
   if (inviteForm) {
     inviteForm.addEventListener('submit', handleGenerateInvite);
+  }
+
+  // Create Challenge Form
+  const createChallengeForm = document.getElementById('createChallengeForm');
+  if (createChallengeForm) {
+    createChallengeForm.addEventListener('submit', handleCreateChallenge);
   }
 
   // Leaderboard Tabs
@@ -950,6 +957,72 @@ function getMedalEmoji(rank) {
 // ADMIN PANEL
 // ============================================
 
+// Handle Create Challenge
+async function handleCreateChallenge(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('challengeName').value.trim();
+  const duration = parseInt(document.getElementById('newChallengeDuration').value);
+  const startDate = document.getElementById('newChallengeStartDate').value;
+  const description = document.getElementById('challengeDescription').value.trim();
+  
+  if (!name || !startDate) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  try {
+    const challenge = {
+      id: Date.now().toString(),
+      name,
+      duration,
+      startDate,
+      description,
+      createdAt: new Date().toISOString(),
+      status: 'active'
+    };
+    
+    appState.challenges.push(challenge);
+    saveAppState();
+    
+    showNotification('✅ Challenge created successfully!', 'success');
+    
+    // Reset form
+    document.getElementById('createChallengeForm').reset();
+    
+    // Reload challenges list
+    loadChallengesList();
+  } catch (error) {
+    console.error('Error creating challenge:', error);
+    showNotification('Error creating challenge', 'error');
+  }
+}
+
+// Load challenges list
+function loadChallengesList() {
+  const challengesList = document.getElementById('challengesList');
+  
+  if (!challengesList) return;
+  
+  if (appState.challenges.length === 0) {
+    challengesList.innerHTML = '<p style="text-align: center; color: #999;">No challenges created yet</p>';
+    return;
+  }
+  
+  challengesList.innerHTML = appState.challenges
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(challenge => `
+      <div class="challenge-item">
+        <h4>${challenge.name}</h4>
+        <p><strong>Duration:</strong> ${challenge.duration} days</p>
+        <p><strong>Start Date:</strong> ${new Date(challenge.startDate).toLocaleDateString()}</p>
+        ${challenge.description ? `<p><strong>Description:</strong> ${challenge.description}</p>` : ''}
+        <p><strong>Status:</strong> <span style="color: #10b981;">${challenge.status}</span></p>
+      </div>
+    `)
+    .join('');
+}
+
 async function handleGenerateInvite(e) {
   e.preventDefault();
   const email = document.getElementById('emailForInvite').value.trim();
@@ -998,6 +1071,19 @@ function saveSettings() {
 }
 
 async function updateAdminPanel() {
+  // Load challenges list
+  loadChallengesList();
+  
+  // Set default date for new challenge form
+  const newChallengeStartDate = document.getElementById('newChallengeStartDate');
+  if (newChallengeStartDate) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    newChallengeStartDate.value = `${year}-${month}-${day}`;
+  }
+  
   // Load settings
   document.getElementById('challengeDuration').value = CONFIG.CHALLENGE_DURATION;
   document.getElementById('challengeStartDate').value = CONFIG.CHALLENGE_START_DATE;
