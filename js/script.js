@@ -330,10 +330,10 @@ function handleSignup(e) {
     return;
   }
 
-  // Check if email already exists in Supabase
+  // Check if email already exists as a user in Supabase
   supabase.getUser(email).then(user => {
     if (user) {
-      showNotification('Email already exists. Please login instead.', 'error');
+      showNotification('Email already has an account. Please login instead.', 'error');
       return;
     }
 
@@ -349,10 +349,9 @@ function handleSignup(e) {
       document.getElementById('signupPassword').value = '';
       document.getElementById('signupPasswordConfirm').value = '';
 
-      // Go to invite code page
+      // Go to dashboard (or home if not a participant yet)
       setTimeout(() => {
-        document.getElementById('joinCodeEmail').value = email;
-        showPage('join-with-code');
+        showPage('home');
       }, 500);
     }).catch(err => {
       console.error('Signup error:', err);
