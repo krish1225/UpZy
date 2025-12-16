@@ -380,31 +380,44 @@ function handleForgotPassword(e) {
     return;
   }
 
-  // Check if email exists in Supabase and update password
+  // Check if email exists in Supabase
   supabase.getUser(email).then(user => {
-    if (!user) {
-      showNotification('Email not found. Please sign up first.', 'error');
-      return;
+    if (user) {
+      // User exists, update password
+      supabase.updateUserPassword(email, password).then(result => {
+        showNotification('✅ Password reset successfully!', 'success');
+        document.getElementById('forgotEmail').value = '';
+        document.getElementById('forgotPassword').value = '';
+        document.getElementById('forgotPasswordConfirm').value = '';
+
+        // Go back to login
+        setTimeout(() => {
+          switchAuthTab('login');
+        }, 500);
+      }).catch(err => {
+        console.error('Password reset error:', err);
+        showNotification('Failed to reset password. Please try again.', 'error');
+      });
+    } else {
+      // User doesn't exist, create account with this password
+      supabase.createUser(email, password).then(result => {
+        showNotification('✅ Account created successfully! You can now login.', 'success');
+        document.getElementById('forgotEmail').value = '';
+        document.getElementById('forgotPassword').value = '';
+        document.getElementById('forgotPasswordConfirm').value = '';
+
+        // Go back to login
+        setTimeout(() => {
+          switchAuthTab('login');
+        }, 500);
+      }).catch(err => {
+        console.error('Account creation error:', err);
+        showNotification('Error creating account. Please try again.', 'error');
+      });
     }
-
-    // Update password in Supabase
-    supabase.updateUserPassword(email, password).then(result => {
-      showNotification('✅ Password reset successfully!', 'success');
-      document.getElementById('forgotEmail').value = '';
-      document.getElementById('forgotPassword').value = '';
-      document.getElementById('forgotPasswordConfirm').value = '';
-
-      // Go back to login
-      setTimeout(() => {
-        switchAuthTab('login');
-      }, 500);
-    }).catch(err => {
-      console.error('Password reset error:', err);
-      showNotification('Failed to reset password. Please try again.', 'error');
-    });
   }).catch(err => {
     console.error('Error checking email:', err);
-    showNotification('Error resetting password. Please try again.', 'error');
+    showNotification('Error processing request. Please try again.', 'error');
   });
 }
 
