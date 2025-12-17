@@ -442,7 +442,6 @@ function handleLogin(e) {
     setTimeout(() => {
       document.getElementById('userNameDisplay').textContent = email.split('@')[0];
       showPage('dashboard');
-      loadUserStats();
     }, 500);
   }).catch(err => {
     console.error('Login error:', err);
