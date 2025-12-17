@@ -817,6 +817,13 @@ function switchAdminTab(tab) {
       btn.classList.add('active');
     }
   });
+
+  // Load content for specific tabs
+  if (tab === 'participants') {
+    loadParticipants();
+  } else if (tab === 'challenges') {
+    loadChallengesTable();
+  }
 }
 
 async function loadLeaderboardPage() {
@@ -1244,37 +1251,59 @@ async function updateAdminPanel() {
   document.getElementById('challengeDuration').value = CONFIG.CHALLENGE_DURATION;
   document.getElementById('challengeStartDate').value = CONFIG.CHALLENGE_START_DATE;
 
-  // Load participants from Supabase
-  try {
-    const allSubmissions = await supabase.getSubmissions();
-    const participantsList = document.getElementById('participantsList');
+  // Load challenges table
+  loadChallengesTable();
+}
 
-    if (!allSubmissions || allSubmissions.length === 0) {
-      participantsList.innerHTML = '<p>No participants yet</p>';
+// Load and display participants
+async function loadParticipants() {
+  try {
+    const participantsList = document.getElementById('participantsList');
+    
+    let participants = [];
+    try {
+      participants = await supabase.getParticipants();
+    } catch (err) {
+      console.warn('Failed to get participants from Supabase:', err);
+      participants = appState.participants || [];
+    }
+
+    if (!participants || participants.length === 0) {
+      participantsList.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No participants yet</p>';
       return;
     }
 
-    // Group by email
-    const byEmail = {};
-    allSubmissions.forEach(submission => {
-      if (!byEmail[submission.email]) {
-        byEmail[submission.email] = { email: submission.email, steps: 0, submissions: 0 };
+    // Display each participant with their info
+    participantsList.innerHTML = participants.map(participant => {
+      const email = participant.email;
+      
+      // Get submission stats for this participant
+      let totalSteps = 0;
+      let submissionCount = 0;
+      if (appState.submissions) {
+        const userSubmissions = appState.submissions.filter(s => s.email === email);
+        submissionCount = userSubmissions.length;
+        totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
       }
-      byEmail[submission.email].steps += submission.steps || 0;
-      byEmail[submission.email].submissions += 1;
-    });
-
-    participantsList.innerHTML = Object.values(byEmail).map(participant => {
+      
       return `
-        <div class="participant-card">
-          <div class="participant-email">${participant.email}</div>
-          <div class="participant-status">${participant.submissions} submissions • ${participant.steps.toLocaleString()} steps</div>
+        <div class="participant-card" style="padding: 1rem; background: white; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">${email}</div>
+            <div style="font-size: 0.9rem; color: var(--text-secondary);">
+              Joined: ${participant.joined_at ? new Date(participant.joined_at).toLocaleDateString() : 'N/A'}
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">${totalSteps.toLocaleString()}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">${submissionCount} submissions</div>
+          </div>
         </div>
       `;
     }).join('');
   } catch (error) {
-    console.error('Error loading admin panel:', error);
-    document.getElementById('participantsList').innerHTML = '<p>Error loading participants</p>';
+    console.error('Error loading participants:', error);
+    document.getElementById('participantsList').innerHTML = '<p style="text-align: center; color: red;">Error loading participants</p>';
   }
 }
 
