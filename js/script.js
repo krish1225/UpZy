@@ -269,7 +269,6 @@ function showHomeContent() {
     if (heroSection) heroSection.style.display = 'none';
     if (leaderboardSection) leaderboardSection.style.display = 'block';
     updateLeaderboard().catch(err => console.error('Error loading leaderboard:', err));
-    loadUserHistory().catch(err => console.error('Error loading history:', err));
   } else {
     // Show hero, hide leaderboard
     if (heroSection) heroSection.style.display = 'block';
@@ -822,6 +821,9 @@ async function updateDashboard() {
     endDate.setDate(endDate.getDate() + CONFIG.CHALLENGE_DURATION);
     const daysRemaining = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
     document.getElementById('daysRemaining').textContent = `${Math.max(0, daysRemaining)} days remaining`;
+    
+    // Load history table
+    await loadUserHistory().catch(err => console.error('Error loading history:', err));
   } catch (error) {
     console.error('Error updating dashboard:', error);
     showNotification('Error loading dashboard data', 'error');
