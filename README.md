@@ -59,29 +59,6 @@ A modern, responsive step challenge tracking app built with vanilla HTML, CSS, a
    ```
    Then visit `http://localhost:8000`
 
-## Configuration
-
-### Supabase Setup
-
-1. Create a Supabase project at https://supabase.com
-2. Create the following tables in your PostgreSQL database:
-   - `users` - User accounts
-   - `participants` - Challenge participants
-   - `submissions` - Daily step/calorie entries
-   - `challenges` - Challenge definitions
-   - `invite_codes` - Invite codes for access control
-   - `user_challenge_progress` - User assignments to challenges
-
-3. Update `js/supabase-client.js` with your credentials:
-   ```javascript
-   const supabase = new SupabaseClient({
-     url: 'YOUR_SUPABASE_URL',
-     key: 'YOUR_SUPABASE_ANON_KEY'
-   });
-   ```
-
-Detailed setup instructions available in `SUPABASE_SETUP.md`
-
 ## Usage
 
 ### For Participants
@@ -123,48 +100,7 @@ Fixed bottom navigation bar with:
 - **Visualization**: Chart.js
 - **Authentication**: Email/Password
 - **Version Control**: Git + GitHub
-
-## Database Schema
-
-### Tables
-
-**users** - User accounts
-- email (primary key)
-- password_hash
-- created_at
-
-**participants** - Challenge participants
-- id (primary key)
-- email (foreign key)
-- joined_at
-
-**submissions** - Daily submissions
-- id (primary key)
-- email (foreign key)
-- submission_date
-- steps
-- calories
-- created_at
-
-**challenges** - Challenge definitions
-- id (primary key)
-- name
-- description
-- start_date
-- end_date
-- created_at
-
-**invite_codes** - Access control
-- id (primary key)
-- code (unique)
-- created_at
-
-**user_challenge_progress** - User-Challenge assignments
-- id (primary key)
-- email (foreign key)
-- challenge_id (foreign key)
-- assigned_at
-
+- 
 ## Customization
 
 ### Updating Content
