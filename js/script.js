@@ -279,19 +279,39 @@ function showHomeContent() {
 
 async function loadUserHistory() {
   try {
-    if (!appState.currentUser) return;
+    if (!appState.currentUser) {
+      console.log('No current user, skipping history load');
+      return;
+    }
 
     const historyTableBody = document.getElementById('historyTableBody');
-    if (!historyTableBody) return;
+    if (!historyTableBody) {
+      console.warn('History table body not found');
+      return;
+    }
+
+    console.log('Loading history for user:', appState.currentUser);
 
     // Fetch all submissions for the current user
-    const userSubmissions = await supabase.getUserSubmissions(appState.currentUser);
-    console.log('User submissions:', userSubmissions);
+    let userSubmissions = [];
+    try {
+      userSubmissions = await supabase.getUserSubmissions(appState.currentUser);
+      console.log('User submissions from API:', userSubmissions);
+    } catch (err) {
+      console.warn('Failed to get submissions from API, trying fallback:', err);
+      // Fallback: get all submissions and filter locally
+      const allSubmissions = await supabase.getSubmissions();
+      userSubmissions = allSubmissions.filter(s => s.email === appState.currentUser);
+      console.log('User submissions (filtered locally):', userSubmissions);
+    }
 
     if (!userSubmissions || userSubmissions.length === 0) {
+      console.log('No submissions found for user');
       historyTableBody.innerHTML = '<tr><td colspan="3" style="padding: 2rem; text-align: center; color: #999;">No history data yet</td></tr>';
       return;
     }
+
+    console.log('Rendering', userSubmissions.length, 'submissions');
 
     // Sort by date descending (most recent first)
     const sortedSubmissions = userSubmissions.sort((a, b) => {
