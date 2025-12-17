@@ -1415,25 +1415,40 @@ async function confirmAssignUsers() {
   
   try {
     let assignedCount = 0;
+    const errors = [];
+    
+    console.log(`Starting to assign ${selectedUsersForChallenge.size} user(s) to challenge ${currentChallengeId}`);
     
     for (const email of selectedUsersForChallenge) {
       try {
-        // Add user to challenge
-        await supabase.addUserToChallenge(email, currentChallengeId);
+        console.log(`Assigning user ${email} to challenge ${currentChallengeId}`);
+        // Must save to Supabase - no local fallback
+        const result = await supabase.addUserToChallenge(email, currentChallengeId);
+        console.log(`Successfully assigned ${email} to Supabase:`, result);
         assignedCount++;
       } catch (err) {
-        console.warn(`Failed to assign ${email}:`, err);
-        // Still try others
+        console.error(`Failed to assign ${email} to Supabase:`, err);
+        errors.push({email, error: err.message});
+        // Continue trying other users but track the error
       }
     }
     
-    showNotification(`✅ Assigned ${assignedCount} user(s) to challenge!`, 'success');
-    closeAssignUsersModal();
-    loadChallengesTable(); // Refresh the table
+    console.log(`Assignment complete: ${assignedCount} succeeded, ${errors.length} failed`);
+    
+    if (assignedCount > 0) {
+      showNotification(`✅ Assigned ${assignedCount} user(s) to challenge in Supabase!`, 'success');
+      closeAssignUsersModal();
+      loadChallengesTable(); // Refresh the table
+    } else {
+      // All assignments failed
+      const errorDetails = errors.map(e => `${e.email}: ${e.error}`).join('\n');
+      console.error('All assignments failed:', errorDetails);
+      showNotification(`❌ Failed to assign users to Supabase:\n${errorDetails}`, 'error');
+    }
     
   } catch (error) {
-    console.error('Error assigning users:', error);
-    showNotification('Error assigning users', 'error');
+    console.error('Error during assignment process:', error);
+    showNotification(`❌ Error: ${error.message}`, 'error');
   }
 }
 
