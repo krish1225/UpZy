@@ -276,17 +276,44 @@
 
             <div id="tab-daily" class="tab-content active">
                 <h3>Today's Top Performers</h3>
-                <div id="dailyLeaderboard" class="leaderboard-list"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; text-align: center;">Steps Progress</h4>
+                        <canvas id="dailyStepsChart"></canvas>
+                    </div>
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; text-align: center;">Calories Progress</h4>
+                        <canvas id="dailyCaloriesChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-weekly" class="tab-content" style="display:none;">
                 <h3>This Week's Ranking</h3>
-                <div id="weeklyLeaderboard" class="leaderboard-list"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; text-align: center;">Steps Progress</h4>
+                        <canvas id="weeklyStepsChart"></canvas>
+                    </div>
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; text-align: center;">Calories Progress</h4>
+                        <canvas id="weeklyCaloriesChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-overall" class="tab-content" style="display:none;">
                 <h3>Overall Challenge Ranking</h3>
-                <div id="overallLeaderboard" class="leaderboard-list"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; text-align: center;">Steps Progress</h4>
+                        <canvas id="overallStepsChart"></canvas>
+                    </div>
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; text-align: center;">Calories Progress</h4>
+                        <canvas id="overallCaloriesChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div class="chart-container" style="margin-top: 3rem;">

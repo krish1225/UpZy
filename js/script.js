@@ -935,11 +935,22 @@ async function updateDailyLeaderboard() {
       const submissionDate = (s.submission_date || s.date).split('T')[0];
       return submissionDate === today;
     });
-    const dailyRankings = todaySubmissions
-      .sort((a, b) => (b.steps || 0) - (a.steps || 0))
+
+    // Group by email for today
+    const dailyByEmail = {};
+    todaySubmissions.forEach(s => {
+      if (!dailyByEmail[s.email]) {
+        dailyByEmail[s.email] = { email: s.email, steps: 0, calories: 0 };
+      }
+      dailyByEmail[s.email].steps += (s.steps || 0);
+      dailyByEmail[s.email].calories += (s.calories || 0);
+    });
+
+    const dailyRankings = Object.values(dailyByEmail)
+      .sort((a, b) => b.steps - a.steps)
       .slice(0, 10);
 
-    renderLeaderboard('dailyLeaderboard', dailyRankings, 'steps');
+    renderLeaderboardCharts('daily', dailyRankings);
   } catch (error) {
     console.error('Error updating daily leaderboard:', error);
   }
@@ -979,7 +990,7 @@ async function updateWeeklyLeaderboard() {
       .sort((a, b) => b.steps - a.steps)
       .slice(0, 10);
 
-    renderLeaderboard('weeklyLeaderboard', weeklyRankings, 'steps');
+    renderLeaderboardCharts('weekly', weeklyRankings);
   } catch (error) {
     console.error('Error updating weekly leaderboard:', error);
   }
@@ -997,8 +1008,20 @@ async function updateOverallLeaderboard() {
       submissions = submissions.filter(s => userEmails.includes(s.email));
     }
     
-    const rankings = calculateOverallRankings(submissions);
-    renderLeaderboard('overallLeaderboard', rankings.slice(0, 10), 'steps');
+    const overallByEmail = {};
+    submissions.forEach(s => {
+      if (!overallByEmail[s.email]) {
+        overallByEmail[s.email] = { email: s.email, steps: 0, calories: 0 };
+      }
+      overallByEmail[s.email].steps += (s.steps || 0);
+      overallByEmail[s.email].calories += (s.calories || 0);
+    });
+
+    const overallRankings = Object.values(overallByEmail)
+      .sort((a, b) => b.steps - a.steps)
+      .slice(0, 10);
+
+    renderLeaderboardCharts('overall', overallRankings);
   } catch (error) {
     console.error('Error updating overall leaderboard:', error);
   }
@@ -1044,6 +1067,87 @@ function renderLeaderboard(elementId, rankings, metric = 'steps') {
 function getMedalEmoji(rank) {
   const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
   return medals[rank] || '🏃';
+}
+
+function renderLeaderboardCharts(type, rankings) {
+  // Prepare data
+  const labels = rankings.map(r => r.email.split('@')[0]);
+  const stepsData = rankings.map(r => r.steps);
+  const caloriesData = rankings.map(r => r.calories);
+
+  // Chart colors
+  const primaryColor = '#7c3aed';
+  const secondaryColor = '#ec4899';
+
+  // Render Steps Chart
+  const stepsCtx = document.getElementById(`${type}StepsChart`);
+  if (stepsCtx) {
+    if (window[`${type}StepsChartInstance`]) {
+      window[`${type}StepsChartInstance`].destroy();
+    }
+    window[`${type}StepsChartInstance`] = new Chart(stepsCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Steps',
+          data: stepsData,
+          backgroundColor: primaryColor,
+          borderColor: primaryColor,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  // Render Calories Chart
+  const caloriesCtx = document.getElementById(`${type}CaloriesChart`);
+  if (caloriesCtx) {
+    if (window[`${type}CaloriesChartInstance`]) {
+      window[`${type}CaloriesChartInstance`].destroy();
+    }
+    window[`${type}CaloriesChartInstance`] = new Chart(caloriesCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Calories',
+          data: caloriesData,
+          backgroundColor: secondaryColor,
+          borderColor: secondaryColor,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
 }
 
 // ============================================
