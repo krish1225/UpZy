@@ -158,6 +158,11 @@ class SupabaseClient {
     }
   }
 
+  async validateInviteCode(code) {
+    const inviteCode = await this.getInviteCode(code);
+    return inviteCode !== null;
+  }
+
   async getAllInviteCodes() {
     return this.request('GET', 'invite_codes');
   }

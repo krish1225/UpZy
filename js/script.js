@@ -381,6 +381,7 @@ function handleLogin(e) {
 function handleSignup(e) {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value.trim();
+  const inviteCode = document.getElementById('signupInviteCode').value.trim();
   const password = document.getElementById('signupPassword').value;
   const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
 
@@ -394,36 +395,53 @@ function handleSignup(e) {
     return;
   }
 
-  // Check if email already exists as a user in Supabase
-  supabase.getUser(email).then(user => {
-    if (user) {
-      showNotification('Email already has an account. Please login instead.', 'error');
+  if (!inviteCode) {
+    showNotification('Please enter an invite code', 'error');
+    return;
+  }
+
+  // Validate invite code with Supabase
+  supabase.validateInviteCode(inviteCode).then(isValid => {
+    if (!isValid) {
+      showNotification('Invalid invite code. Please check and try again.', 'error');
       return;
     }
 
-    // Create account in Supabase
-    supabase.createUser(email, password).then(result => {
-      appState.currentUser = email;
-      appState.isAdmin = false;
-      saveAppState();
-      updateUIState();
+    // Check if email already exists as a user in Supabase
+    supabase.getUser(email).then(user => {
+      if (user) {
+        showNotification('Email already has an account. Please login instead.', 'error');
+        return;
+      }
 
-      showNotification('✅ Account created successfully!', 'success');
-      document.getElementById('signupEmail').value = '';
-      document.getElementById('signupPassword').value = '';
-      document.getElementById('signupPasswordConfirm').value = '';
+      // Create account in Supabase
+      supabase.createUser(email, password).then(result => {
+        appState.currentUser = email;
+        appState.isAdmin = false;
+        saveAppState();
+        updateUIState();
 
-      // Go to dashboard (or home if not a participant yet)
-      setTimeout(() => {
-        showPage('home');
-      }, 500);
+        showNotification('✅ Account created successfully!', 'success');
+        document.getElementById('signupEmail').value = '';
+        document.getElementById('signupInviteCode').value = '';
+        document.getElementById('signupPassword').value = '';
+        document.getElementById('signupPasswordConfirm').value = '';
+
+        // Go to dashboard (or home if not a participant yet)
+        setTimeout(() => {
+          showPage('home');
+        }, 500);
+      }).catch(err => {
+        console.error('Signup error:', err);
+        showNotification('Signup failed. Please try again.', 'error');
+      });
     }).catch(err => {
-      console.error('Signup error:', err);
-      showNotification('Signup failed. Please try again.', 'error');
+      console.error('Error checking email:', err);
+      showNotification('Error creating account. Please try again.', 'error');
     });
   }).catch(err => {
-    console.error('Error checking email:', err);
-    showNotification('Error creating account. Please try again.', 'error');
+    console.error('Error validating invite code:', err);
+    showNotification('Error validating invite code. Please try again.', 'error');
   });
 }
 
