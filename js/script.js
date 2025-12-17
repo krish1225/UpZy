@@ -945,7 +945,12 @@ async function updateDailyLeaderboard() {
     }
     
     const todaySubmissions = submissions.filter(s => {
-      const submissionDate = (s.submission_date || s.date).split('T')[0];
+      // Handle both DATE format (2025-12-16) and TIMESTAMP format (2025-12-16T...)
+      let submissionDate = s.submission_date || s.date;
+      if (submissionDate.includes('T')) {
+        submissionDate = submissionDate.split('T')[0];
+      }
+      console.log('Comparing submission date:', submissionDate, 'with today:', today);
       return submissionDate === today;
     });
     console.log('Today submissions:', todaySubmissions);
@@ -988,7 +993,11 @@ async function updateWeeklyLeaderboard() {
     }
     
     const weeklySubmissions = submissions.filter(s => {
-      const submissionDate = (s.submission_date || s.date).split('T')[0];
+      // Handle both DATE format and TIMESTAMP format
+      let submissionDate = s.submission_date || s.date;
+      if (submissionDate.includes('T')) {
+        submissionDate = submissionDate.split('T')[0];
+      }
       return submissionDate >= weekAgoStr;
     });
 
