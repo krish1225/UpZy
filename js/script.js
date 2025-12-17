@@ -1545,14 +1545,14 @@ async function populateLeaderboardChallengesDropdown() {
     const select = document.getElementById('leaderboardChallengeSelect');
     if (!select) return;
     
-    // Fetch user's challenges
-    let userChallenges = [];
+    // Fetch all active challenges
+    let allChallenges = [];
     try {
-      userChallenges = await supabase.getUserChallenges(appState.currentUser);
+      allChallenges = await supabase.getChallenges();
     } catch (err) {
-      console.warn('Failed to fetch user challenges from Supabase:', err);
-      // Fall back to checking all challenges for users
-      userChallenges = appState.challenges || [];
+      console.warn('Failed to fetch challenges from Supabase:', err);
+      // Fall back to app state challenges
+      allChallenges = appState.challenges || [];
     }
     
     // Clear existing options except the first one
@@ -1560,9 +1560,9 @@ async function populateLeaderboardChallengesDropdown() {
       select.remove(1);
     }
     
-    // Add user's challenges
-    if (userChallenges && userChallenges.length > 0) {
-      userChallenges.forEach(challenge => {
+    // Add all active challenges
+    if (allChallenges && allChallenges.length > 0) {
+      allChallenges.forEach(challenge => {
         const option = document.createElement('option');
         option.value = challenge.id || challenge.name;
         option.textContent = challenge.name;
