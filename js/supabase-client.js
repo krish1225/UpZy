@@ -255,12 +255,83 @@ class SupabaseClient {
 
   // User Challenge Progress
   async addUserToChallenge(email, challengeId) {
-    return this.request('POST', 'user_challenge_progress', {
-      email,
-      challenge_id: challengeId,
-      joined_at: new Date().toISOString(),
-      status: 'active'
-    });
+    // First check if user is already assigned to this challenge
+    try {
+      const existingUrl = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}&challenge_id=eq.${challengeId}`;
+      const checkOptions = {
+        headers: {
+          'apikey': this.key,
+          'Authorization': `Bearer ${this.key}`,
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      const checkResponse = await fetch(existingUrl, checkOptions);
+      const existing = await checkResponse.json();
+      
+      if (existing && existing.length > 0) {
+        // User already assigned - update the status to active
+        console.log(`[Supabase] User already assigned, updating status for ${email}...`);
+        
+        const updateUrl = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}&challenge_id=eq.${challengeId}`;
+        const updateOptions = {
+          method: 'PATCH',
+          headers: {
+            'apikey': this.key,
+            'Authorization': `Bearer ${this.key}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            status: 'active',
+            joined_at: new Date().toISOString()
+          })
+        };
+        
+        const updateResponse = await fetch(updateUrl, updateOptions);
+        const result = await updateResponse.json();
+        
+        if (!updateResponse.ok) {
+          throw new Error(result.message || `HTTP ${updateResponse.status}`);
+        }
+        
+        console.log(`[Supabase] Updated assignment for ${email}:`, result);
+        return result;
+      } else {
+        // User not assigned yet - insert new record
+        console.log(`[Supabase] New assignment, inserting ${email}...`);
+        
+        const insertUrl = `${this.url}/rest/v1/user_challenge_progress`;
+        const insertOptions = {
+          method: 'POST',
+          headers: {
+            'apikey': this.key,
+            'Authorization': `Bearer ${this.key}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            email,
+            challenge_id: challengeId,
+            joined_at: new Date().toISOString(),
+            status: 'active'
+          })
+        };
+        
+        const insertResponse = await fetch(insertUrl, insertOptions);
+        const result = await insertResponse.json();
+        
+        if (!insertResponse.ok) {
+          throw new Error(result.message || `HTTP ${insertResponse.status}`);
+        }
+        
+        console.log(`[Supabase] Inserted assignment for ${email}:`, result);
+        return result;
+      }
+    } catch (error) {
+      console.error(`[Supabase] Failed to add/update user to challenge:`, error);
+      throw error;
+    }
   }
 
   async getUserChallenges(email) {
