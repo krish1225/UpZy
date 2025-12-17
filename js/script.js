@@ -1076,20 +1076,30 @@ async function loadChallengesTable() {
       return;
     }
     
-    // Calculate enrolled users for each challenge
+    // Fetch enrolled users for each challenge
     let totalEnrolled = 0;
+    const rows = [];
     
-    tableBody.innerHTML = challenges
-      .sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt))
-      .map(challenge => {
+    for (const challenge of challenges) {
+      try {
+        // Get enrolled users count for this challenge
+        let enrolledCount = 0;
+        try {
+          const participants = await supabase.getChallengeParticipants(challenge.id || challenge.name);
+          enrolledCount = participants ? participants.length : 0;
+          console.log(`Challenge ${challenge.name}: ${enrolledCount} users`);
+        } catch (err) {
+          console.warn(`Failed to get participants for challenge ${challenge.id}:`, err);
+          enrolledCount = 0;
+        }
+        
+        totalEnrolled += enrolledCount;
+        
         const startDate = new Date(challenge.start_date || challenge.startDate);
         const endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + (challenge.duration || 30));
         
-        const enrolledCount = 0; // Will be updated when we fetch user progress
-        totalEnrolled += enrolledCount;
-        
-        return `
+        rows.push(`
           <tr>
             <td><strong>${challenge.name}</strong></td>
             <td>${challenge.duration || 30} days</td>
@@ -1105,10 +1115,14 @@ async function loadChallengesTable() {
               </div>
             </td>
           </tr>
-        `;
-      })
-      .join('');
+        `);
+      } catch (error) {
+        console.error(`Error loading challenge ${challenge.name}:`, error);
+      }
+    }
     
+    // Set the table HTML with all rows
+    tableBody.innerHTML = rows.join('');
     updateChallengeStats(challenges.length, totalEnrolled);
   } catch (error) {
     console.error('Error loading challenges table:', error);
