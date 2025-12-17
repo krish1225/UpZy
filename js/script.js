@@ -291,17 +291,24 @@ async function loadUserHistory() {
 
     console.log('Loading history for user:', appState.currentUser);
 
+    // First, try to get all submissions to see what's available
+    console.log('Fetching all submissions to debug...');
+    const allSubmissions = await supabase.getSubmissions();
+    console.log('All submissions count:', allSubmissions.length);
+    console.log('All submissions sample:', allSubmissions.slice(0, 3));
+
     // Fetch all submissions for the current user
     let userSubmissions = [];
     try {
       userSubmissions = await supabase.getUserSubmissions(appState.currentUser);
-      console.log('User submissions from API:', userSubmissions);
+      console.log('User submissions from API (query by email):', userSubmissions);
     } catch (err) {
       console.warn('Failed to get submissions from API, trying fallback:', err);
       // Fallback: get all submissions and filter locally
-      const allSubmissions = await supabase.getSubmissions();
       userSubmissions = allSubmissions.filter(s => s.email === appState.currentUser);
       console.log('User submissions (filtered locally):', userSubmissions);
+      console.log('Current user being searched:', appState.currentUser);
+      console.log('Emails in all submissions:', allSubmissions.map(s => s.email).slice(0, 5));
     }
 
     if (!userSubmissions || userSubmissions.length === 0) {
