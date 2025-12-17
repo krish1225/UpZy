@@ -1046,6 +1046,9 @@ async function handleCreateChallenge(e) {
     const form = document.getElementById('createChallengeForm');
     if (form) form.reset();
     
+    // Close the modal
+    closeCreateChallengeModal();
+    
     // Reload challenges list and table
     loadChallengesTable();
   } catch (error) {
