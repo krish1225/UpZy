@@ -924,7 +924,14 @@ async function updateDailyLeaderboard() {
     console.log('Loading daily leaderboard for:', today);
     
     const allSubmissions = await supabase.getSubmissions();
-    console.log('All submissions:', allSubmissions);
+    console.log('All submissions fetched from Supabase:', allSubmissions);
+    console.log('Number of submissions:', allSubmissions.length);
+    
+    if (!allSubmissions || allSubmissions.length === 0) {
+      console.warn('No submissions found');
+      renderLeaderboardCharts('daily', []);
+      return;
+    }
     
     // Filter by challenge if selected
     let submissions = allSubmissions;
