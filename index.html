@@ -51,9 +51,23 @@
                     <div id="overallLeaderboard" class="leaderboard-list"></div>
                 </div>
 
-                <div class="chart-container" style="margin-top: 3rem;">
-                    <h3>Progress Chart</h3>
-                    <canvas id="progressChart"></canvas>
+                <!-- History Table -->
+                <div style="margin-top: 3rem;">
+                    <h3>My Daily History</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="background-color: var(--light-bg); border-bottom: 2px solid var(--border-color);">
+                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Date</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600;">Steps</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600;">Calories</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="3" style="padding: 2rem; text-align: center; color: #999;">No history data yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

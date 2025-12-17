@@ -269,10 +269,63 @@ function showHomeContent() {
     if (heroSection) heroSection.style.display = 'none';
     if (leaderboardSection) leaderboardSection.style.display = 'block';
     updateLeaderboard().catch(err => console.error('Error loading leaderboard:', err));
+    loadUserHistory().catch(err => console.error('Error loading history:', err));
   } else {
     // Show hero, hide leaderboard
     if (heroSection) heroSection.style.display = 'block';
     if (leaderboardSection) leaderboardSection.style.display = 'none';
+  }
+}
+
+async function loadUserHistory() {
+  try {
+    if (!appState.currentUser) return;
+
+    const historyTableBody = document.getElementById('historyTableBody');
+    if (!historyTableBody) return;
+
+    // Fetch all submissions for the current user
+    const userSubmissions = await supabase.getUserSubmissions(appState.currentUser);
+    console.log('User submissions:', userSubmissions);
+
+    if (!userSubmissions || userSubmissions.length === 0) {
+      historyTableBody.innerHTML = '<tr><td colspan="3" style="padding: 2rem; text-align: center; color: #999;">No history data yet</td></tr>';
+      return;
+    }
+
+    // Sort by date descending (most recent first)
+    const sortedSubmissions = userSubmissions.sort((a, b) => {
+      const dateA = new Date(a.submission_date || a.date);
+      const dateB = new Date(b.submission_date || b.date);
+      return dateB - dateA;
+    });
+
+    // Build table rows
+    historyTableBody.innerHTML = sortedSubmissions.map((submission, index) => {
+      const date = new Date(submission.submission_date || submission.date);
+      const formattedDate = date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      const steps = submission.steps || 0;
+      const calories = submission.calories || 0;
+      
+      return `
+        <tr style="border-bottom: 1px solid var(--border-color); ${index % 2 === 0 ? 'background-color: rgba(255,255,255,0.5);' : ''}">
+          <td style="padding: 1rem; text-align: left;">${formattedDate}</td>
+          <td style="padding: 1rem; text-align: center; font-weight: 600;">${steps.toLocaleString()}</td>
+          <td style="padding: 1rem; text-align: center; font-weight: 600;">${calories.toLocaleString()}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Error loading user history:', error);
+    const historyTableBody = document.getElementById('historyTableBody');
+    if (historyTableBody) {
+      historyTableBody.innerHTML = '<tr><td colspan="3" style="padding: 2rem; text-align: center; color: red;">Error loading history</td></tr>';
+    }
   }
 }
 
