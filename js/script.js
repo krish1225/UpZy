@@ -1658,13 +1658,24 @@ async function populateLeaderboardChallengesDropdown() {
     const select = document.getElementById('leaderboardChallengeSelect');
     if (!select) return;
     
-    // First, try to load challenges if not already in appState
-    if (!appState.challenges || appState.challenges.length === 0) {
+    // Get challenges assigned to the current user
+    let userChallenges = [];
+    if (appState.currentUser) {
       try {
-        appState.challenges = await supabase.getChallenges();
-        console.log('Loaded challenges from Supabase:', appState.challenges);
+        const userChallengeProgress = await supabase.getUserChallenges(appState.currentUser);
+        console.log('User challenge progress:', userChallengeProgress);
+        
+        if (userChallengeProgress && userChallengeProgress.length > 0) {
+          // Get the full challenge details for each assigned challenge
+          const challengeIds = userChallengeProgress.map(ucp => ucp.challenge_id);
+          const allChallenges = await supabase.getChallenges();
+          
+          // Filter to only challenges the user is assigned to
+          userChallenges = allChallenges.filter(c => challengeIds.includes(c.id));
+          console.log('User challenges (filtered):', userChallenges);
+        }
       } catch (err) {
-        console.warn('Failed to fetch challenges from Supabase:', err);
+        console.warn('Failed to fetch user challenges from Supabase:', err);
       }
     }
     
@@ -1673,17 +1684,17 @@ async function populateLeaderboardChallengesDropdown() {
       select.remove(1);
     }
     
-    // Add all active challenges
-    if (appState.challenges && appState.challenges.length > 0) {
-      console.log('Populating dropdown with challenges:', appState.challenges);
-      appState.challenges.forEach(challenge => {
+    // Add user's assigned challenges
+    if (userChallenges && userChallenges.length > 0) {
+      console.log('Populating dropdown with user challenges:', userChallenges);
+      userChallenges.forEach(challenge => {
         const option = document.createElement('option');
         option.value = challenge.id || challenge.name;
         option.textContent = challenge.name;
         select.appendChild(option);
       });
     } else {
-      console.warn('No challenges found to populate dropdown');
+      console.warn('No assigned challenges found for user');
     }
   } catch (error) {
     console.error('Error populating challenges dropdown:', error);
