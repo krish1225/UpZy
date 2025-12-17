@@ -1,19 +1,19 @@
 # UpZy - Step Challenge Competition App
 
-A modern, responsive step challenge tracking app designed for Google Sites hosting. Built with vanilla HTML, CSS, and JavaScript with Google Sheets integration for real-time data persistence.
+A modern, responsive step challenge tracking app built with vanilla HTML, CSS, and JavaScript. Powered by Supabase for real-time data persistence and PostgreSQL database.
 
 ## Features
 
 - 🏃 **Step & Calorie Tracking** - Track daily steps and calories burned
-- 🏆 **Live Leaderboards** - Daily, weekly, and overall rankings with medals
+- 🏆 **Live Leaderboards** - Daily, weekly, and overall rankings with split bar charts
 - 🔥 **Streak Counter** - Maintain daily submission streaks
-- 📊 **Progress Charts** - Visualize top performers with Chart.js
+- 📊 **Challenge-Specific Charts** - Visualize top performers with Chart.js by challenge
 - 👥 **Invite-Based Access** - Secure challenge with generated invite codes
-- 🔐 **Admin Panel** - Generate invites, manage participants, configure settings
+- 🔐 **Admin Panel** - Create challenges, manage participants, assign users
 - 📱 **Fully Responsive** - Works perfectly on mobile, tablet, and desktop
-- ☁️ **Google Sheets Backend** - Real-time data sync with Google Sheets
+- ☁️ **Supabase Backend** - Real-time PostgreSQL database with REST API
 - ⚡ **Fast & Lightweight** - No build tools, pure vanilla code
-- 🎨 **Modern UI** - Minimalist design with gamification elements
+- 🎨 **Modern UI** - Minimalist design with gamification elements (white background, purple/pink accents)
 
 ## Project Structure
 
@@ -23,16 +23,15 @@ A modern, responsive step challenge tracking app designed for Google Sites hosti
 ├── css/
 │   └── styles.css               # All styling (minimalist + gamified)
 ├── js/
-│   ├── script.js                # Core app logic
-│   └── google-sheets-api.js      # Google Sheets integration
+│   ├── script.js                # Core app logic and event handling
+│   ├── supabase-client.js        # Supabase REST API wrapper
+│   └── google-sheets-api.js      # Legacy Google Sheets integration (deprecated)
 ├── Images/
-│   ├── UpZyV3.png               # Logo (runner crossing finish line)
-│   ├── UpZy.png                 # Alternative logo
-│   └── UpZyV2.png               # Alternative logo
+│   └── UpZyV3.png               # Logo
 ├── oAuth/                        # OAuth credentials (git ignored)
 ├── README.md                     # This file
+├── SUPABASE_SETUP.md             # Supabase database setup guide
 ├── .gitignore                    # Git ignore file
-├── .env.example                  # Environment config template
 └── .github/
     └── copilot-instructions.md   # Copilot setup guide
 ```
@@ -40,8 +39,7 @@ A modern, responsive step challenge tracking app designed for Google Sites hosti
 ## Getting Started
 
 ### Prerequisites
-- A Google Account (for OAuth authentication)
-- A Google Sheet (for data storage)
+- A Supabase account (free tier available at https://supabase.com)
 - A web browser
 - A text editor or IDE for editing
 
@@ -53,76 +51,119 @@ A modern, responsive step challenge tracking app designed for Google Sites hosti
    cd UpZy
    ```
 
-2. Configure your Google credentials in `js/google-sheets-api.js`:
-   - Add your `CLIENT_ID`
-   - Add your `API_KEY`
-   - Add your `SHEET_ID`
-
-3. Start local server:
+2. Start a local server:
    ```bash
    python -m http.server 8000
+   # or
+   npx http-server
    ```
    Then visit `http://localhost:8000`
 
 ## Configuration
 
-### Google Sheets Setup
+### Supabase Setup
 
-1. Create a Google Sheet with these tabs:
-   - `settings` - Challenge configuration
-   - `invites` - Invite codes and recipients
-   - `participants` - User list
+1. Create a Supabase project at https://supabase.com
+2. Create the following tables in your PostgreSQL database:
+   - `users` - User accounts
+   - `participants` - Challenge participants
    - `submissions` - Daily step/calorie entries
+   - `challenges` - Challenge definitions
+   - `invite_codes` - Invite codes for access control
+   - `user_challenge_progress` - User assignments to challenges
 
-2. Configure columns:
-   - **invites**: email, code, createdAt
-   - **participants**: email, joinDate, status
-   - **submissions**: email, date, steps, calories
+3. Update `js/supabase-client.js` with your credentials:
+   ```javascript
+   const supabase = new SupabaseClient({
+     url: 'YOUR_SUPABASE_URL',
+     key: 'YOUR_SUPABASE_ANON_KEY'
+   });
+   ```
 
-### Environment Variables
-
-Copy `.env.example` to `.env` and fill in:
-```
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_API_KEY=your_api_key
-GOOGLE_SHEET_ID=your_sheet_id
-ADMIN_PASSWORD=your_admin_password
-```
+Detailed setup instructions available in `SUPABASE_SETUP.md`
 
 ## Usage
 
 ### For Participants
 
 1. Click "Join Challenge"
-2. Sign in with Google OR use invite code
-3. Submit daily steps and calories
-4. View your rank on leaderboards
-5. Maintain your streak!
+2. Create an account with email and password
+3. Enter your invite code
+4. Submit daily steps and calories on the dashboard
+5. View your rank on leaderboards
+6. Check your daily history table
 
 ### For Admins
 
-1. Click "Admin Access"
-2. Enter admin password (default: `admin123`)
-3. Generate invite codes for participants
-4. Configure challenge duration and start date
-5. View all participants
+1. Click "Admin" in bottom navigation (or use admin login)
+2. Create new challenges
+3. Assign participants to challenges
+4. View all participants and submissions
+5. Generate invite codes
 
-## Pages
+## Key Pages
 
-- **Home** - Introduction and CTAs
-- **Join** - Google Sign-In or invite code login
-- **Dashboard** - Personal stats, daily submission form, streak counter
-- **Leaderboard** - Daily/weekly/overall rankings with charts
-- **Admin** - Invite generation, settings, participant management
+- **Home/Dashboard** - Personal stats (Total Steps, Calories, Rank, Streak), daily submission form, and daily history table
+- **Leaderboard** - Daily/Weekly/Overall rankings with 50/50 split bar charts (Steps & Calories), filtered by assigned challenges
+- **Admin** - Challenge management, participant management, and invite code generation
+
+## Navigation
+
+Fixed bottom navigation bar with:
+- 🏠 Home (Dashboard)
+- 🏆 Leaderboard
+- ⚙️ Admin
+- 🚪 Logout
 
 ## Technology Stack
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Authentication**: Google OAuth 2.0
-- **Backend**: Google Sheets API
+- **Backend**: Supabase (PostgreSQL + REST API)
+- **Database**: PostgreSQL with RLS policies
 - **Visualization**: Chart.js
-- **Hosting**: Google Sites (or any static host)
+- **Authentication**: Email/Password
 - **Version Control**: Git + GitHub
+
+## Database Schema
+
+### Tables
+
+**users** - User accounts
+- email (primary key)
+- password_hash
+- created_at
+
+**participants** - Challenge participants
+- id (primary key)
+- email (foreign key)
+- joined_at
+
+**submissions** - Daily submissions
+- id (primary key)
+- email (foreign key)
+- submission_date
+- steps
+- calories
+- created_at
+
+**challenges** - Challenge definitions
+- id (primary key)
+- name
+- description
+- start_date
+- end_date
+- created_at
+
+**invite_codes** - Access control
+- id (primary key)
+- code (unique)
+- created_at
+
+**user_challenge_progress** - User-Challenge assignments
+- id (primary key)
+- email (foreign key)
+- challenge_id (foreign key)
+- assigned_at
 
 ## Customization
 
@@ -131,78 +172,28 @@ ADMIN_PASSWORD=your_admin_password
 Edit `index.html` to customize:
 - App name and description
 - Form labels and messages
-- Home page content
+- Page content
 
 Edit `js/script.js` to customize:
-- Admin password
-- Challenge duration
-- Color scheme variables (in CSS)
-
-## Deployment to Google Sites
-
-1. Create a new Google Site
-2. Add an "Embed" section
-3. Paste the UpZy app code or link
-4. Configure sharing permissions
-5. Share link with participants
-
-## Admin Access
-
-**Default Credentials:**
-- Password: `admin123` (change in `js/script.js`)
-
-## Data Storage
-
-All data is stored in Google Sheets, making it:
-- Real-time accessible
-- Easy to export
-- Shareable with team
-- Backup-friendly
-
-## Contributing
-
-Feel free to fork, modify, and improve UpZy!
-
-## License
-
-MIT License - feel free to use this project for personal or commercial use
-
-## Support
-
-For issues or questions, create an issue on GitHub: https://github.com/krish1225/UpZy/issues
-
-- Contact email
+- Challenge configuration
+- Color scheme
+- Functionality
 
 ### Styling
 
 Modify `css/styles.css` to change:
-- Color scheme (update CSS variables in `:root`)
+- Color scheme (CSS variables in `:root`)
 - Fonts and typography
 - Spacing and layout
 - Animation timings
 
-### Adding Interactivity
-
-Edit `js/script.js` to add:
-- New interactive features
-- Form handling
-- Analytics tracking
-
 ## Color Scheme
 
-The portfolio uses a modern purple-to-pink gradient:
-- **Primary**: `#667eea` (Purple)
-- **Secondary**: `#764ba2` (Dark Purple)
-- **Accent**: `#f093fb` (Pink)
-
-## Deployment on Google Sites
-
-To host on Google Sites:
-
-1. **Create a new Google Site** at https://sites.google.com
-2. **Add an Embed element** and paste your HTML code, or
-3. **Upload as a standalone HTML file** using Google Drive
-4. Configure the sharing settings as needed
+The app uses a modern minimalist design:
+- **Primary**: `#7c3aed` (Purple)
+- **Secondary**: `#ec4899` (Pink)
+- **Background**: `#ffffff` (White)
+- **Text Primary**: `#111827` (Dark Gray)
 
 ## Browser Support
 
@@ -211,12 +202,14 @@ To host on Google Sites:
 - Safari (latest)
 - Edge (latest)
 
+## Contributing
+
+Feel free to fork, modify, and improve UpZy! Submit pull requests or create issues on GitHub.
+
 ## License
 
-Free to use and modify for personal projects.
+MIT License - feel free to use this project for personal or commercial use
 
-## Notes
+## Support
 
-- All CSS is in a single file for easy Google Sites embedding
-- No external dependencies or CDNs required
-- Fully self-contained for maximum compatibility
+For issues or questions, create an issue on GitHub: https://github.com/krish1225/UpZy/issues
