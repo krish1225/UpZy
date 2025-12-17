@@ -919,8 +919,9 @@ function setupLeaderboardTabs() {
 
 async function updateDailyLeaderboard() {
   try {
-    const today = new Date().toISOString().split('T')[0];
-    console.log('Loading daily leaderboard for:', today);
+    // Use local date instead of UTC
+    const today = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
+    console.log('Loading daily leaderboard for (local date):', today);
     
     const allSubmissions = await supabase.getSubmissions();
     console.log('All submissions fetched from Supabase:', allSubmissions);
@@ -977,9 +978,10 @@ async function updateDailyLeaderboard() {
 
 async function updateWeeklyLeaderboard() {
   try {
+    // Use local dates instead of UTC
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    const weekAgoStr = weekAgo.toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
 
     const allSubmissions = await supabase.getSubmissions();
     
