@@ -135,7 +135,8 @@ class SupabaseClient {
       headers: {
         'apikey': this.key,
         'Authorization': `Bearer ${this.key}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
       }
     };
     
