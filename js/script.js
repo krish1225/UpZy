@@ -822,13 +822,6 @@ async function updateDashboard() {
     const userRank = rankings.findIndex(r => r.email === email) + 1;
     document.getElementById('currentRank').textContent = userRank > 0 ? `#${userRank}` : '-';
 
-    // Days remaining
-    const startDate = new Date(CONFIG.CHALLENGE_START_DATE);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + CONFIG.CHALLENGE_DURATION);
-    const daysRemaining = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-    document.getElementById('daysRemaining').textContent = `${Math.max(0, daysRemaining)} days remaining`;
-    
     // Load history table
     await loadUserHistory().catch(err => console.error('Error loading history:', err));
   } catch (error) {
