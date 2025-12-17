@@ -48,14 +48,22 @@ class SupabaseClient {
     try {
       console.log(`[Supabase] ${method} ${table}`, data);
       const response = await fetch(url, options);
-      const result = await response.json();
       
       if (!response.ok) {
+        const result = await response.json();
         console.error('Supabase error:', result);
         throw new Error(result.message || 'Database error');
       }
       
+      const result = await response.json();
       console.log(`[Supabase] Success:`, result);
+      
+      // Return empty array if result is null for GET requests
+      if (method === 'GET' && result === null) {
+        console.warn('GET request returned null, returning empty array');
+        return [];
+      }
+      
       return result;
     } catch (error) {
       console.error('Request failed:', error);
@@ -111,7 +119,14 @@ class SupabaseClient {
   }
 
   async getSubmissions(filters = {}) {
-    return this.request('GET', 'submissions', null, filters);
+    try {
+      const result = await this.request('GET', 'submissions', null, filters);
+      console.log('getSubmissions result:', result);
+      return result || [];
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
+      return [];
+    }
   }
 
   async getUserSubmissions(email) {
@@ -125,8 +140,17 @@ class SupabaseClient {
     };
     
     try {
+      console.log('Fetching user submissions for:', email);
       const response = await fetch(url, options);
-      return await response.json();
+      const result = await response.json();
+      console.log('User submissions response:', result);
+      
+      if (!response.ok) {
+        console.error('Supabase error for user submissions:', result);
+        return [];
+      }
+      
+      return result || [];
     } catch (error) {
       console.error('Failed to get user submissions:', error);
       return [];
