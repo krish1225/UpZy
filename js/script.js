@@ -888,7 +888,6 @@ async function updateLeaderboard() {
   await updateDailyLeaderboard();
   await updateWeeklyLeaderboard();
   await updateOverallLeaderboard();
-  await updateProgressChart();
 }
 
 function setupLeaderboardTabs() {
@@ -1541,60 +1540,6 @@ function updateDateTime() {
   setInterval(() => {
     // Update any time-dependent UI
   }, 60000);
-}
-
-async function updateProgressChart() {
-  const ctx = document.getElementById('progressChart');
-  if (!ctx) return;
-
-  try {
-    const allSubmissions = await supabase.getSubmissions();
-    const rankings = calculateOverallRankings(allSubmissions);
-    const top5 = rankings.slice(0, 5);
-
-    if (window.progressChartInstance) {
-      window.progressChartInstance.destroy();
-    }
-
-    window.progressChartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: top5.map(r => r.email.split('@')[0]),
-        datasets: [
-          {
-            label: 'Total Steps',
-            data: top5.map(r => r.steps),
-            backgroundColor: '#4f46e5',
-            borderColor: '#4338ca',
-            borderWidth: 1
-          },
-          {
-            label: 'Total Calories',
-            data: top5.map(r => r.calories),
-            backgroundColor: '#06b6d4',
-            borderColor: '#0891b2',
-            borderWidth: 1
-          }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top'
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-  } catch (error) {
-    console.error('Error updating progress chart:', error);
-  }
 }
 
 // Assign Users to Challenge Modal Functions
