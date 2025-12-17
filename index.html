@@ -304,45 +304,21 @@
 
                 <!-- Challenges Tab -->
                 <div id="admin-tab-challenges" class="admin-tab-content active">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                        <!-- Create Challenge Section -->
-                        <div class="challenge-form-section">
-                            <h3>Create New Challenge</h3>
-                            <form id="createChallengeForm">
-                                <div class="form-group">
-                                    <label>Challenge Name</label>
-                                    <input type="text" id="challengeName" placeholder="e.g., Steps Challenge 2025" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Challenge Duration (days)</label>
-                                    <input type="number" id="newChallengeDuration" value="30" min="1" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Start Date</label>
-                                    <input type="date" id="newChallengeStartDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Description</label>
-                                    <textarea id="challengeDescription" placeholder="Challenge description..." rows="3"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-block">Create Challenge</button>
-                            </form>
-                        </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="openCreateChallengeModal()" style="padding: 0.75rem 1.5rem; font-size: 1rem;">+ Create New Challenge</button>
+                    </div>
 
-                        <!-- Quick Stats -->
-                        <div class="challenge-list-section">
-                            <h3>Challenge Stats</h3>
-                            <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px;">
-                                <div style="margin-bottom: 1rem;">
-                                    <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);" id="totalChallengesCount">0</div>
-                                    <div style="color: var(--text-secondary);">Total Challenges</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 2rem; font-weight: bold; color: #10b981;" id="totalUsersInChallengesCount">0</div>
-                                    <div style="color: var(--text-secondary);">Total Users Enrolled</div>
-                                </div>
-                            </div>
+                    <!-- Quick Stats -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);" id="totalChallengesCount">0</div>
+                            <div style="color: var(--text-secondary);">Total Challenges</div>
                         </div>
+                        <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #10b981;" id="totalUsersInChallengesCount">0</div>
+                            <div style="color: var(--text-secondary);">Total Users Enrolled</div>
+                        </div>
+                    </div>
                     </div>
 
                     <!-- Challenges Table -->
@@ -429,6 +405,100 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAssignUsersModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="confirmAssignUsers()">Assign Selected Users</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Challenge Modal -->
+    <div id="createChallengeModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Create New Challenge</h2>
+                <button class="modal-close" onclick="closeCreateChallengeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createChallengeForm">
+                    <div class="form-group">
+                        <label>Challenge Name</label>
+                        <input type="text" id="challengeName" placeholder="e.g., Steps Challenge 2025" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Challenge Duration (days)</label>
+                        <input type="number" id="newChallengeDuration" value="30" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="newChallengeStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="challengeDescription" placeholder="Challenge description..." rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCreateChallengeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="document.getElementById('createChallengeForm').dispatchEvent(new Event('submit'))">Create Challenge</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Challenge Modal -->
+    <div id="editChallengeModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Edit Challenge</h2>
+                <button class="modal-close" onclick="closeEditChallengeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editChallengeForm">
+                    <div class="form-group">
+                        <label>Challenge Name</label>
+                        <input type="text" id="editChallengeName" placeholder="e.g., Steps Challenge 2025" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Challenge Duration (days)</label>
+                        <input type="number" id="editChallengeDuration" value="30" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="editChallengeStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="editChallengeDescription" placeholder="Challenge description..." rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="editChallengeStatus" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditChallengeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEditedChallenge()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Challenge Users Modal -->
+    <div id="viewChallengeUsersModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Users in Challenge: <span id="viewChallengeName"></span></h2>
+                <button class="modal-close" onclick="closeViewUsersModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="usersList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Users will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeViewUsersModal()">Close</button>
             </div>
         </div>
     </div>

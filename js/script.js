@@ -1110,8 +1110,8 @@ async function loadChallengesTable() {
             <td>
               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <button onclick="openAssignUsersModal('${challenge.id || challenge.name}', '${challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Assign</button>
-                <button onclick="editChallenge('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Edit</button>
-                <button onclick="viewChallengeUsers('${challenge.id || challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Users</button>
+                <button onclick="openEditChallengeModal('${challenge.id || challenge.name}', '${challenge.name}', ${challenge.duration || 30}, '${challenge.start_date || challenge.startDate}', '${(challenge.description || '').replace(/'/g, "\\'")}', '${challenge.status || 'active'}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Edit</button>
+                <button onclick="openViewUsersModal('${challenge.id || challenge.name}', '${challenge.name}')" class="btn btn-small" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Users</button>
               </div>
             </td>
           </tr>
@@ -1513,5 +1513,138 @@ async function updateChallengeLeaderboard(challengeId) {
   
   // Refresh all leaderboard tabs
   await updateLeaderboard();
+}
+
+// Create Challenge Modal Functions
+function openCreateChallengeModal() {
+  document.getElementById('createChallengeModal').style.display = 'block';
+}
+
+function closeCreateChallengeModal() {
+  document.getElementById('createChallengeModal').style.display = 'none';
+  document.getElementById('createChallengeForm').reset();
+}
+
+// Edit Challenge Modal Functions
+let currentEditChallengeId = null;
+
+function openEditChallengeModal(challengeId, challengeName, duration, startDate, description, status) {
+  currentEditChallengeId = challengeId;
+  
+  document.getElementById('editChallengeName').value = challengeName;
+  document.getElementById('editChallengeDuration').value = duration || 30;
+  document.getElementById('editChallengeStartDate').value = startDate;
+  document.getElementById('editChallengeDescription').value = description || '';
+  document.getElementById('editChallengeStatus').value = status || 'active';
+  
+  document.getElementById('editChallengeModal').style.display = 'block';
+}
+
+function closeEditChallengeModal() {
+  document.getElementById('editChallengeModal').style.display = 'none';
+  currentEditChallengeId = null;
+}
+
+async function saveEditedChallenge() {
+  if (!currentEditChallengeId) return;
+  
+  const name = document.getElementById('editChallengeName').value.trim();
+  const duration = parseInt(document.getElementById('editChallengeDuration').value);
+  const startDate = document.getElementById('editChallengeStartDate').value;
+  const description = document.getElementById('editChallengeDescription').value.trim();
+  const status = document.getElementById('editChallengeStatus').value;
+  
+  if (!name || !startDate) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  try {
+    // Update in Supabase
+    let updateUrl = `${supabase.url}/rest/v1/challenges?id=eq.${currentEditChallengeId}`;
+    const updateOptions = {
+      method: 'PATCH',
+      headers: {
+        'apikey': supabase.key,
+        'Authorization': `Bearer ${supabase.key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        name,
+        duration,
+        start_date: startDate,
+        description,
+        status,
+        updated_at: new Date().toISOString()
+      })
+    };
+    
+    const response = await fetch(updateUrl, updateOptions);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    // Also update in local state
+    const localChallenge = appState.challenges.find(c => c.id === currentEditChallengeId);
+    if (localChallenge) {
+      localChallenge.name = name;
+      localChallenge.duration = duration;
+      localChallenge.startDate = startDate;
+      localChallenge.description = description;
+      localChallenge.status = status;
+      saveAppState();
+    }
+    
+    showNotification('✅ Challenge updated successfully!', 'success');
+    closeEditChallengeModal();
+    loadChallengesTable();
+  } catch (error) {
+    console.error('Error updating challenge:', error);
+    showNotification('Error updating challenge: ' + error.message, 'error');
+  }
+}
+
+// View Challenge Users Modal Functions
+let currentViewChallengeId = null;
+
+async function openViewUsersModal(challengeId, challengeName) {
+  currentViewChallengeId = challengeId;
+  document.getElementById('viewChallengeName').textContent = challengeName;
+  
+  try {
+    const participants = await supabase.getChallengeParticipants(challengeId);
+    const usersList = document.getElementById('viewChallengeUsersModal').querySelector('#usersList');
+    
+    if (!participants || participants.length === 0) {
+      usersList.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No users assigned to this challenge</p>';
+    } else {
+      usersList.innerHTML = participants
+        .map((user, index) => `
+          <div style="padding: 1rem; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+            <div style="flex: 1;">
+              <div style="font-weight: 500;">${user.email}</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                Joined: ${new Date(user.joined_at).toLocaleDateString()}
+              </div>
+            </div>
+            <div style="background: ${user.status === 'active' ? '#d1fae5' : '#fee2e2'}; color: ${user.status === 'active' ? '#065f46' : '#7f1d1d'}; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
+              ${user.status || 'active'}
+            </div>
+          </div>
+        `)
+        .join('');
+    }
+    
+    document.getElementById('viewChallengeUsersModal').style.display = 'block';
+  } catch (error) {
+    console.error('Error loading challenge users:', error);
+    showNotification('Error loading users', 'error');
+  }
+}
+
+function closeViewUsersModal() {
+  document.getElementById('viewChallengeUsersModal').style.display = 'none';
+  currentViewChallengeId = null;
 }
 
