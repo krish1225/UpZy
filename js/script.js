@@ -416,21 +416,35 @@ function handleSignup(e) {
 
       // Create account in Supabase
       supabase.createUser(email, password).then(result => {
-        appState.currentUser = email;
-        appState.isAdmin = false;
-        saveAppState();
-        updateUIState();
+        // Add user to participants table
+        supabase.addParticipant(email).then(() => {
+          appState.currentUser = email;
+          appState.isAdmin = false;
+          saveAppState();
+          updateUIState();
 
-        showNotification('✅ Account created successfully!', 'success');
-        document.getElementById('signupEmail').value = '';
-        document.getElementById('signupInviteCode').value = '';
-        document.getElementById('signupPassword').value = '';
-        document.getElementById('signupPasswordConfirm').value = '';
+          showNotification('✅ Account created successfully!', 'success');
+          document.getElementById('signupEmail').value = '';
+          document.getElementById('signupInviteCode').value = '';
+          document.getElementById('signupPassword').value = '';
+          document.getElementById('signupPasswordConfirm').value = '';
 
-        // Go to dashboard (or home if not a participant yet)
-        setTimeout(() => {
-          showPage('home');
-        }, 500);
+          // Go to dashboard (or home if not a participant yet)
+          setTimeout(() => {
+            showPage('home');
+          }, 500);
+        }).catch(err => {
+          console.error('Error adding participant:', err);
+          // Still consider signup successful even if adding to participants fails
+          appState.currentUser = email;
+          appState.isAdmin = false;
+          saveAppState();
+          updateUIState();
+          showNotification('✅ Account created! (Note: Some features may be limited)', 'success');
+          setTimeout(() => {
+            showPage('home');
+          }, 500);
+        });
       }).catch(err => {
         console.error('Signup error:', err);
         showNotification('Signup failed. Please try again.', 'error');

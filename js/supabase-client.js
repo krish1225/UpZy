@@ -220,7 +220,7 @@ class SupabaseClient {
   }
 
   async addParticipant(email) {
-    return this.request('POST', 'participants', { email });
+    return this.request('POST', 'participants', { email, joined_at: new Date().toISOString() });
   }
 
   // Challenges
