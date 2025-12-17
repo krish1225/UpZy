@@ -861,6 +861,16 @@ function switchAdminTab(tab) {
 async function loadLeaderboardPage() {
   // Load and display leaderboard on the dedicated leaderboard page
   
+  // Load all challenges first
+  try {
+    if (!appState.challenges || appState.challenges.length === 0) {
+      appState.challenges = await supabase.getChallenges();
+      console.log('Loaded challenges:', appState.challenges);
+    }
+  } catch (err) {
+    console.warn('Failed to load challenges:', err);
+  }
+  
   // Show challenge selector for logged-in users
   if (appState.currentUser) {
     const challengeSelector = document.getElementById('challengeSelector');
@@ -1545,14 +1555,14 @@ async function populateLeaderboardChallengesDropdown() {
     const select = document.getElementById('leaderboardChallengeSelect');
     if (!select) return;
     
-    // Fetch all active challenges
-    let allChallenges = [];
-    try {
-      allChallenges = await supabase.getChallenges();
-    } catch (err) {
-      console.warn('Failed to fetch challenges from Supabase:', err);
-      // Fall back to app state challenges
-      allChallenges = appState.challenges || [];
+    // First, try to load challenges if not already in appState
+    if (!appState.challenges || appState.challenges.length === 0) {
+      try {
+        appState.challenges = await supabase.getChallenges();
+        console.log('Loaded challenges from Supabase:', appState.challenges);
+      } catch (err) {
+        console.warn('Failed to fetch challenges from Supabase:', err);
+      }
     }
     
     // Clear existing options except the first one
@@ -1561,13 +1571,16 @@ async function populateLeaderboardChallengesDropdown() {
     }
     
     // Add all active challenges
-    if (allChallenges && allChallenges.length > 0) {
-      allChallenges.forEach(challenge => {
+    if (appState.challenges && appState.challenges.length > 0) {
+      console.log('Populating dropdown with challenges:', appState.challenges);
+      appState.challenges.forEach(challenge => {
         const option = document.createElement('option');
         option.value = challenge.id || challenge.name;
         option.textContent = challenge.name;
         select.appendChild(option);
       });
+    } else {
+      console.warn('No challenges found to populate dropdown');
     }
   } catch (error) {
     console.error('Error populating challenges dropdown:', error);
