@@ -921,20 +921,27 @@ function setupLeaderboardTabs() {
 async function updateDailyLeaderboard() {
   try {
     const today = new Date().toISOString().split('T')[0];
+    console.log('Loading daily leaderboard for:', today);
+    
     const allSubmissions = await supabase.getSubmissions();
+    console.log('All submissions:', allSubmissions);
     
     // Filter by challenge if selected
     let submissions = allSubmissions;
     if (appState.selectedChallengeFilter) {
+      console.log('Filtering by challenge:', appState.selectedChallengeFilter);
       const challengeUsers = await supabase.getChallengeParticipants(appState.selectedChallengeFilter);
+      console.log('Challenge participants:', challengeUsers);
       const userEmails = challengeUsers.map(u => u.email);
       submissions = submissions.filter(s => userEmails.includes(s.email));
+      console.log('Filtered submissions:', submissions);
     }
     
     const todaySubmissions = submissions.filter(s => {
       const submissionDate = (s.submission_date || s.date).split('T')[0];
       return submissionDate === today;
     });
+    console.log('Today submissions:', todaySubmissions);
 
     // Group by email for today
     const dailyByEmail = {};
@@ -950,6 +957,7 @@ async function updateDailyLeaderboard() {
       .sort((a, b) => b.steps - a.steps)
       .slice(0, 10);
 
+    console.log('Daily rankings:', dailyRankings);
     renderLeaderboardCharts('daily', dailyRankings);
   } catch (error) {
     console.error('Error updating daily leaderboard:', error);
@@ -1075,9 +1083,37 @@ function renderLeaderboardCharts(type, rankings) {
   const stepsData = rankings.map(r => r.steps);
   const caloriesData = rankings.map(r => r.calories);
 
+  console.log(`${type} Rankings:`, rankings);
+
   // Chart colors
   const primaryColor = '#7c3aed';
   const secondaryColor = '#ec4899';
+
+  // If no data, show message
+  if (rankings.length === 0) {
+    const stepsCtx = document.getElementById(`${type}StepsChart`);
+    const caloriesCtx = document.getElementById(`${type}CaloriesChart`);
+    
+    if (stepsCtx) {
+      stepsCtx.getContext('2d').fillStyle = 'rgba(0,0,0,0.1)';
+      stepsCtx.getContext('2d').fillRect(0, 0, stepsCtx.width, stepsCtx.height);
+      const message = 'No data available';
+      stepsCtx.getContext('2d').fillStyle = '#999';
+      stepsCtx.getContext('2d').font = '16px Arial';
+      stepsCtx.getContext('2d').textAlign = 'center';
+      stepsCtx.getContext('2d').fillText(message, stepsCtx.width / 2, stepsCtx.height / 2);
+    }
+    if (caloriesCtx) {
+      caloriesCtx.getContext('2d').fillStyle = 'rgba(0,0,0,0.1)';
+      caloriesCtx.getContext('2d').fillRect(0, 0, caloriesCtx.width, caloriesCtx.height);
+      const message = 'No data available';
+      caloriesCtx.getContext('2d').fillStyle = '#999';
+      caloriesCtx.getContext('2d').font = '16px Arial';
+      caloriesCtx.getContext('2d').textAlign = 'center';
+      caloriesCtx.getContext('2d').fillText(message, caloriesCtx.width / 2, caloriesCtx.height / 2);
+    }
+    return;
+  }
 
   // Render Steps Chart
   const stepsCtx = document.getElementById(`${type}StepsChart`);
