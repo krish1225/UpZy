@@ -1273,34 +1273,37 @@ async function loadParticipants() {
       return;
     }
 
-    // Display each participant with their info
-    participantsList.innerHTML = participants.map(participant => {
-      const email = participant.email;
+    // Display participants in a table
+    let html = `
+      <table class="challenges-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Joined Date</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    participants.forEach(participant => {
+      const joinedDate = participant.joined_at 
+        ? new Date(participant.joined_at).toLocaleDateString() 
+        : 'N/A';
       
-      // Get submission stats for this participant
-      let totalSteps = 0;
-      let submissionCount = 0;
-      if (appState.submissions) {
-        const userSubmissions = appState.submissions.filter(s => s.email === email);
-        submissionCount = userSubmissions.length;
-        totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
-      }
-      
-      return `
-        <div class="participant-card" style="padding: 1rem; background: white; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-weight: 600; margin-bottom: 0.25rem;">${email}</div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">
-              Joined: ${participant.joined_at ? new Date(participant.joined_at).toLocaleDateString() : 'N/A'}
-            </div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">${totalSteps.toLocaleString()}</div>
-            <div style="font-size: 0.85rem; color: var(--text-secondary);">${submissionCount} submissions</div>
-          </div>
-        </div>
+      html += `
+        <tr>
+          <td>${participant.email}</td>
+          <td>${joinedDate}</td>
+        </tr>
       `;
-    }).join('');
+    });
+    
+    html += `
+        </tbody>
+      </table>
+    `;
+    
+    participantsList.innerHTML = html;
   } catch (error) {
     console.error('Error loading participants:', error);
     document.getElementById('participantsList').innerHTML = '<p style="text-align: center; color: red;">Error loading participants</p>';
