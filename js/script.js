@@ -1727,6 +1727,16 @@ async function populateLeaderboardChallengesDropdown() {
         option.textContent = challenge.name;
         select.appendChild(option);
       });
+      
+      // Auto-select the first active challenge
+      if (select.options.length > 1) {
+        select.value = select.options[1].value;
+        appState.selectedChallengeFilter = select.options[1].value;
+        console.log('Auto-selected first active challenge:', appState.selectedChallengeFilter);
+        
+        // Refresh leaderboard with the selected challenge
+        await updateLeaderboard();
+      }
     } else {
       console.warn('No active assigned challenges found for user');
     }
