@@ -836,13 +836,15 @@ async function updateDashboard() {
     const today = new Date().toISOString().split('T')[0];
     const todaySubmission = userSubmissions.find(s => s.date === today);
     const todaySteps = todaySubmission ? todaySubmission.steps : 0;
-    document.getElementById('todaySteps').textContent = todaySteps.toLocaleString();
+    const todayStepsEl = document.getElementById('todaySteps');
+    if (todayStepsEl) todayStepsEl.textContent = todaySteps.toLocaleString();
 
     const currentYear = new Date().getFullYear();
     const yearSteps = userSubmissions
       .filter(s => new Date(s.date).getFullYear() === currentYear)
       .reduce((sum, s) => sum + (s.steps || 0), 0);
-    document.getElementById('yearSteps').textContent = yearSteps.toLocaleString();
+    const yearStepsEl = document.getElementById('yearSteps');
+    if (yearStepsEl) yearStepsEl.textContent = yearSteps.toLocaleString();
 
     // Draw weight loss chart
     appState.weightSubmissions = userSubmissions;
