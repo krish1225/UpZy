@@ -896,6 +896,11 @@ function drawWeightChart(submissions, period = 'month') {
     data = sorted.slice(-30);
   }
   
+  // Log data for debugging
+  if (data.length > 0) {
+    console.log('Chart data sample:', data[0]);
+  }
+  
   if (data.length === 0) {
     canvas.parentElement.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No weight data yet</p>';
     return;
@@ -903,13 +908,18 @@ function drawWeightChart(submissions, period = 'month') {
 
   // Format labels based on period
   let labels;
-  if (period === 'year') {
-    // Show week-based labels for year view
-    labels = data.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-  } else {
-    // Show daily labels for month view
-    labels = data.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-  }
+  labels = data.map(s => {
+    try {
+      const date = new Date(s.date);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'N/A';
+      }
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch (e) {
+      return 'N/A';
+    }
+  });
   
   const chartData = data.map(s => s.weight || 0);
 
