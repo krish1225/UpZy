@@ -807,78 +807,84 @@ async function updateDashboard() {
     const userSubmissions = await supabase.getUserSubmissions(email);
     
     // Safety check: ensure userSubmissions is an array
-    if (!Array.isArray(userSubmissions)) {
-      console.error('userSubmissions is not an array:', userSubmissions);
-      showNotification('Error loading submissions', 'error');
-      return;
-    }
-    
-    const totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
-    
-    // Get the most recent weight
-    const latestWeight = userSubmissions.length > 0 
-      ? userSubmissions[0].weight || 0
-      : 0;
-    
-    // Calculate streak based on submissions
-    const streak = calculateStreak(email, userSubmissions);
+    if (Array.isArray(userSubmissions) && userSubmissions.length > 0) {
+      const totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
+      
+      // Get the most recent weight
+      const latestWeight = userSubmissions.length > 0 
+        ? userSubmissions[0].weight || 0
+        : 0;
+      
+      // Calculate streak based on submissions
+      const streak = calculateStreak(email, userSubmissions);
 
-    const totalStepsEl = document.getElementById('totalSteps');
-    if (totalStepsEl) totalStepsEl.textContent = totalSteps.toLocaleString();
-    
-    const totalCaloriesEl = document.getElementById('totalCalories');
-    if (totalCaloriesEl) totalCaloriesEl.textContent = latestWeight.toLocaleString();
-    
-    const streakEl = document.getElementById('streak');
-    if (streakEl) streakEl.textContent = streak;
+      const totalStepsEl = document.getElementById('totalSteps');
+      if (totalStepsEl) totalStepsEl.textContent = totalSteps.toLocaleString();
+      
+      const totalCaloriesEl = document.getElementById('totalCalories');
+      if (totalCaloriesEl) totalCaloriesEl.textContent = latestWeight.toLocaleString();
+      
+      const streakEl = document.getElementById('streak');
+      if (streakEl) streakEl.textContent = streak;
 
-    // Calculate rank - fetch all submissions from Supabase
-    const allSubmissions = await supabase.getSubmissions();
-    const rankings = calculateOverallRankings(allSubmissions);
-    const userRank = rankings.findIndex(r => r.email === email) + 1;
-    const currentRankEl = document.getElementById('currentRank');
-    if (currentRankEl) currentRankEl.textContent = userRank > 0 ? `#${userRank}` : '-';
+      // Calculate rank - fetch all submissions from Supabase
+      const allSubmissions = await supabase.getSubmissions();
+      const rankings = calculateOverallRankings(allSubmissions);
+      const userRank = rankings.findIndex(r => r.email === email) + 1;
+      const currentRankEl = document.getElementById('currentRank');
+      if (currentRankEl) currentRankEl.textContent = userRank > 0 ? `#${userRank}` : '-';
 
-    // Update today's steps and yearly steps
-    const today = new Date().toISOString().split('T')[0];
-    const todaySubmission = userSubmissions.find(s => s.date === today);
-    const todaySteps = todaySubmission ? todaySubmission.steps : 0;
-    const todayStepsEl = document.getElementById('todaySteps');
-    if (todayStepsEl) todayStepsEl.textContent = todaySteps.toLocaleString();
+      // Update today's steps and yearly steps
+      const today = new Date().toISOString().split('T')[0];
+      const todaySubmission = userSubmissions.find(s => s.date === today);
+      const todaySteps = todaySubmission ? todaySubmission.steps : 0;
+      const todayStepsEl = document.getElementById('todaySteps');
+      if (todayStepsEl) todayStepsEl.textContent = todaySteps.toLocaleString();
 
-    const currentYear = new Date().getFullYear();
-    const yearSteps = userSubmissions
-      .filter(s => new Date(s.date).getFullYear() === currentYear)
-      .reduce((sum, s) => sum + (s.steps || 0), 0);
-    const yearStepsEl = document.getElementById('yearSteps');
-    if (yearStepsEl) yearStepsEl.textContent = yearSteps.toLocaleString();
+      const currentYear = new Date().getFullYear();
+      const yearSteps = userSubmissions
+        .filter(s => new Date(s.date).getFullYear() === currentYear)
+        .reduce((sum, s) => sum + (s.steps || 0), 0);
+      const yearStepsEl = document.getElementById('yearSteps');
+      if (yearStepsEl) yearStepsEl.textContent = yearSteps.toLocaleString();
 
-    // Draw weight loss chart
-    appState.weightSubmissions = userSubmissions;
-    drawWeightChart(userSubmissions, 'month');
+      // Draw weight loss chart
+      appState.weightSubmissions = userSubmissions;
+      drawWeightChart(userSubmissions, 'month');
 
-    // Add event listener for chart period selector
-    const periodSelect = document.getElementById('weightChartPeriod');
-    if (periodSelect) {
-      periodSelect.addEventListener('change', (e) => {
-        drawWeightChart(appState.weightSubmissions, e.target.value);
-      });
+      // Add event listener for chart period selector
+      const periodSelect = document.getElementById('weightChartPeriod');
+      if (periodSelect) {
+        periodSelect.addEventListener('change', (e) => {
+          drawWeightChart(appState.weightSubmissions, e.target.value);
+        });
+      }
+    } else {
+      console.warn('No submissions data available');
     }
 
-    // Load history table
+    // Always load history table regardless of submissions status
     await loadUserHistory().catch(err => console.error('Error loading history:', err));
   } catch (error) {
     console.error('Error updating dashboard:', error);
-    showNotification('Error loading dashboard data', 'error');
+    // Still try to load history even if there's an error
+    await loadUserHistory().catch(err => console.error('Error loading history:', err));
   }
 }
 
 function drawWeightChart(submissions, period = 'month') {
-  const canvas = document.getElementById('weightLossChart');
-  if (!canvas) return;
+  try {
+    const canvas = document.getElementById('weightLossChart');
+    if (!canvas) return;
 
-  // Sort submissions by date
-  const sorted = [...submissions].sort((a, b) => new Date(a.date) - new Date(b.date));
+    // Ensure submissions is an array
+    if (!Array.isArray(submissions)) {
+      console.warn('submissions is not an array in drawWeightChart');
+      return;
+    }
+
+    // Sort submissions by date
+    const sorted = [...submissions].sort((a, b) => new Date(a.date) - new Date(b.date));
   
   // Get data based on period
   let data;
@@ -956,6 +962,9 @@ function drawWeightChart(submissions, period = 'month') {
       }
     }
   });
+  } catch (error) {
+    console.error('Error drawing weight chart:', error);
+  }
 }
 
 async function handleSubmission(e) {
