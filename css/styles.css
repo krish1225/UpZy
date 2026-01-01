@@ -70,13 +70,18 @@ p {
 
 /* Logo Header */
 .logo-header {
-  padding: 0.75rem 2rem;
+  padding: 1rem 2rem;
   background: white;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   justify-content: center;
+}
+
+.logo-header-img {
+  max-width: 150px;
+  height: auto;
+  object-fit: contain;
 }
 
 .logo-img {
