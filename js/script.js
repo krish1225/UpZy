@@ -2138,3 +2138,142 @@ function closeViewUsersModal() {
   currentViewChallengeId = null;
 }
 
+/* ======================================
+   MOBILE OPTIMIZATION HELPERS
+   ====================================== */
+
+// Detect if device is mobile
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         window.innerWidth <= 768;
+}
+
+// Detect if device is in landscape
+function isLandscape() {
+  return window.innerHeight < window.innerWidth;
+}
+
+// Handle mobile viewport adjustments
+function setupMobileOptimizations() {
+  const isMobile = isMobileDevice();
+  
+  if (isMobile) {
+    // Disable auto-zoom on input focus
+    document.addEventListener('touchmove', function(event) {
+      if (event.target.matches('input, textarea, select')) {
+        event.stopPropagation();
+      }
+    }, false);
+    
+    // Improve form input handling on mobile
+    const inputs = document.querySelectorAll('input[type="date"], input[type="number"]');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        // Scroll to input smoothly
+        setTimeout(() => {
+          this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      });
+    });
+  }
+  
+  // Handle orientation changes
+  window.addEventListener('orientationchange', function() {
+    setTimeout(() => {
+      const charts = document.querySelectorAll('canvas');
+      charts.forEach(canvas => {
+        // Force chart redraw on orientation change
+        if (window.Chart && window.Chart.instances) {
+          window.Chart.instances.forEach(instance => {
+            if (instance && instance.resize) {
+              instance.resize();
+            }
+          });
+        }
+      });
+    }, 100);
+  });
+}
+
+// Improve touch feedback
+function setupTouchFeedback() {
+  const touchableElements = document.querySelectorAll('button, .btn, a.nav-item');
+  
+  touchableElements.forEach(element => {
+    element.addEventListener('touchstart', function() {
+      this.style.opacity = '0.7';
+    });
+    
+    element.addEventListener('touchend', function() {
+      this.style.opacity = '1';
+    });
+  });
+}
+
+// Virtual keyboard handling
+function setupKeyboardHandling() {
+  let lastViewportHeight = window.innerHeight;
+  
+  window.addEventListener('resize', function() {
+    const currentHeight = window.innerHeight;
+    
+    // If height decreased significantly, keyboard likely appeared
+    if (currentHeight < lastViewportHeight * 0.75) {
+      // Keyboard is open
+      document.body.classList.add('keyboard-open');
+    } else {
+      // Keyboard is closed
+      document.body.classList.remove('keyboard-open');
+    }
+    
+    lastViewportHeight = currentHeight;
+  });
+}
+
+// Smooth scrolling for mobile
+function smoothScroll(element) {
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// Mobile-friendly modal closing (tap outside to close)
+function setupMobileModalHandling() {
+  const modals = document.querySelectorAll('.modal');
+  
+  modals.forEach(modal => {
+    modal.addEventListener('click', function(event) {
+      if (event.target === this) {
+        this.style.display = 'none';
+      }
+    });
+    
+    // Also close on escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && modal.style.display !== 'none') {
+        modal.style.display = 'none';
+      }
+    });
+  });
+}
+
+// Initialize all mobile optimizations on page load
+document.addEventListener('DOMContentLoaded', function() {
+  setupMobileOptimizations();
+  setupTouchFeedback();
+  setupKeyboardHandling();
+  setupMobileModalHandling();
+});
+
+// Re-run optimizations when pages change
+const originalShowPage = showPage;
+function showPage(pageName) {
+  originalShowPage(pageName);
+  
+  // Re-apply mobile optimizations to newly visible elements
+  setTimeout(() => {
+    setupTouchFeedback();
+    setupMobileModalHandling();
+  }, 100);
+}
+

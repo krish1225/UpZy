@@ -1084,3 +1084,280 @@ p {
   gap: 1rem;
 }
 
+/* ======================================
+   TOUCH-FRIENDLY & INTERACTION PATTERNS
+   ====================================== */
+
+/* Ensure all interactive elements are easily tappable */
+button,
+a.btn,
+input[type="button"],
+input[type="submit"] {
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Improve form input touch targets */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  min-height: 48px;
+  font-size: 16px; /* Prevents auto-zoom on iOS */
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  transition: var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Ensure sufficient contrast for accessibility */
+@media (prefers-contrast: more) {
+  :root {
+    --text-secondary: #4b5563;
+  }
+}
+
+/* Dark mode support (if user prefers) */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+  
+  .form-container,
+  .stat-card,
+  .modal-content {
+    background-color: #1e293b;
+    color: #f1f5f9;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Improve readable font sizing */
+body {
+  font-size: 16px;
+}
+
+h1 {
+  line-height: 1.2;
+}
+
+h2 {
+  line-height: 1.3;
+}
+
+p {
+  line-height: 1.6;
+}
+
+/* Better spacing for mobile readability */
+.page {
+  padding: 0;
+  margin: 0;
+}
+
+/* Ensure images scale properly */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Better table styling for mobile */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  text-align: left;
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+/* Scrollable table wrapper for mobile */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better spacing on cards */
+.card {
+  margin-bottom: 1.5rem;
+}
+
+/* Ensure modals work well on mobile */
+.modal {
+  padding: 1rem;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Better form layout */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Button group spacing */
+.btn-group {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.btn-group .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Improve dropdown styling */
+select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.2em;
+  padding-right: 2.5rem;
+}
+
+/* Checkbox & radio styling */
+input[type="checkbox"],
+input[type="radio"] {
+  min-height: 20px;
+  min-width: 20px;
+  cursor: pointer;
+}
+
+/* Improve label associations */
+label {
+  cursor: pointer;
+}
+
+/* Better link styling */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Improve focus visibility for keyboard navigation */
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Better spacing between form elements */
+.form-group + .form-group {
+  margin-top: 1.2rem;
+}
+
+/* Improve button states */
+button:active {
+  transform: scale(0.98);
+}
+
+/* Better bottom navigation padding */
+.bottom-nav {
+  padding: 0.8rem 0;
+}
+
+.nav-item {
+  padding: 0.6rem 0.8rem;
+}
+
+/* Ensure touch targets are not too close together */
+.nav-item + .nav-item {
+  margin-left: 0.5rem;
+}
+
+/* Better spacing in hero section */
+.hero {
+  margin-bottom: 2rem;
+}
+
+.hero-buttons {
+  gap: 1rem;
+}
+
+/* Improve card spacing */
+.stat-card {
+  margin-bottom: 1rem;
+}
+
+/* Better text truncation for long text */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncate-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+

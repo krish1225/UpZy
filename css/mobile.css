@@ -1,0 +1,408 @@
+/* ======================================
+   MOBILE OPTIMIZATION FOR NON-ADMIN USERS
+   ====================================== */
+
+/* Mobile Breakpoint: 768px and below */
+@media (max-width: 768px) {
+  
+  /* ===== CONTAINER & SPACING ===== */
+  .container {
+    padding: 0 15px;
+  }
+  
+  .main-content {
+    padding: 15px;
+    padding-bottom: 120px;
+  }
+  
+  /* ===== TYPOGRAPHY ===== */
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  p {
+    font-size: 0.95rem;
+  }
+  
+  /* ===== HEADER ===== */
+  .logo-header {
+    padding: 0.4rem 1rem;
+  }
+  
+  .logo-header-img {
+    max-width: 100px;
+  }
+  
+  /* ===== NAVIGATION ===== */
+  .bottom-nav {
+    padding: 0.8rem 0;
+  }
+  
+  .nav-item {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    min-height: 50px;
+  }
+  
+  /* ===== DASHBOARD GRID ===== */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .submission-card {
+    padding: 1rem;
+  }
+  
+  .submission-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .submission-form-compact .form-compact-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .submission-form-compact .form-compact-group {
+    width: 100%;
+  }
+  
+  .submission-form-compact label {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .submission-form-compact input {
+    padding: 0.6rem;
+    font-size: 1rem;
+  }
+  
+  .btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    min-height: 44px;
+  }
+  
+  /* ===== STATS SECTION ===== */
+  .stats-section {
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+  
+  .stats-box {
+    padding: 0.8rem;
+  }
+  
+  .stats-box-title {
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .stats-box-value {
+    font-size: 1.4rem;
+    margin-bottom: 0.1rem;
+  }
+  
+  .stats-box-label {
+    font-size: 0.7rem;
+  }
+  
+  /* ===== CHARTS ===== */
+  .chart-section {
+    padding: 1rem;
+  }
+  
+  .chart-section h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .chart-section canvas {
+    max-height: 200px;
+  }
+  
+  /* ===== FORMS ===== */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    padding: 0.7rem;
+    font-size: 1rem;
+  }
+  
+  /* ===== HISTORY TABLE ===== */
+  table {
+    font-size: 0.85rem !important;
+  }
+  
+  table th,
+  table td {
+    padding: 0.6rem !important;
+  }
+  
+  /* Make table scrollable on mobile */
+  table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    border-collapse: collapse;
+  }
+  
+  /* ===== MODALS ===== */
+  .modal-content {
+    max-width: 95% !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+  }
+  
+  /* ===== LEADERBOARD ===== */
+  .leaderboard-tabs {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .tab-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    flex: 1;
+  }
+  
+  .tab-content {
+    padding: 0;
+  }
+  
+  .tab-content h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  /* ===== LISTS & CONTAINERS ===== */
+  #usersList {
+    max-height: 300px !important;
+  }
+  
+  .form-inline-group {
+    min-width: auto;
+  }
+  
+  /* ===== BUTTONS ===== */
+  button {
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+  
+  .btn-small {
+    padding: 0.5rem 0.8rem !important;
+    min-height: auto;
+  }
+  
+  /* ===== HERO SECTION ===== */
+  .hero {
+    padding: 1.5rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+  
+  .hero p {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .hero-buttons {
+    gap: 0.5rem;
+  }
+  
+  /* ===== INPUT FIELDS ===== */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+  }
+  
+  /* ===== FORM CONTAINERS ===== */
+  .form-container {
+    max-width: 100%;
+    padding: 1.5rem 1rem;
+    margin: 0;
+  }
+  
+  /* ===== CARD SPACING ===== */
+  .stat-card {
+    padding: 1.5rem 1rem;
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.85rem;
+  }
+}
+
+/* Ultra-mobile: 480px and below */
+@media (max-width: 480px) {
+  
+  /* ===== HEADER ===== */
+  .logo-header {
+    padding: 0.3rem 0.5rem;
+  }
+  
+  .logo-header-img {
+    max-width: 80px;
+  }
+  
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    padding: 10px;
+    padding-bottom: 110px;
+  }
+  
+  /* ===== TYPOGRAPHY ===== */
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
+  }
+  
+  h3 {
+    font-size: 1rem;
+  }
+  
+  /* ===== NAVIGATION ===== */
+  .nav-item {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  /* ===== FORMS ===== */
+  .form-group {
+    margin-bottom: 0.8rem;
+  }
+  
+  .form-group label {
+    font-size: 0.85rem;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    padding: 0.6rem;
+    font-size: 1rem;
+  }
+  
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  /* ===== SUBMISSION FORM ===== */
+  .submission-form-compact .form-compact-row {
+    gap: 0.3rem;
+  }
+  
+  .submission-card {
+    padding: 0.8rem;
+  }
+  
+  /* ===== STATS ===== */
+  .stats-box {
+    padding: 0.6rem;
+  }
+  
+  .stats-box-value {
+    font-size: 1.2rem;
+  }
+  
+  /* ===== MODALS ===== */
+  .modal-content {
+    margin: 10px;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 0.8rem;
+  }
+  
+  /* ===== TABLES ===== */
+  table {
+    font-size: 0.75rem !important;
+  }
+  
+  table th,
+  table td {
+    padding: 0.4rem !important;
+  }
+  
+  /* ===== CONTAINER ===== */
+  .container {
+    padding: 0 10px;
+  }
+}
+
+/* Landscape mobile: height-based adjustments */
+@media (max-height: 600px) {
+  .main-content {
+    padding-bottom: 150px;
+  }
+  
+  .bottom-nav {
+    padding: 0.6rem 0;
+  }
+  
+  .nav-item {
+    min-height: 40px;
+  }
+}
