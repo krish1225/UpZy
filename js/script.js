@@ -1701,9 +1701,12 @@ async function populateLeaderboardChallengesDropdown() {
           const challengeIds = userChallengeProgress.map(ucp => ucp.challenge_id);
           const allChallenges = await supabase.getChallenges();
           
-          // Filter to only challenges the user is assigned to
-          userChallenges = allChallenges.filter(c => challengeIds.includes(c.id));
-          console.log('User challenges (filtered):', userChallenges);
+          // Filter to only active challenges the user is assigned to
+          userChallenges = allChallenges.filter(c => 
+            challengeIds.includes(c.id) && 
+            c.status === 'active'
+          );
+          console.log('User active challenges (filtered):', userChallenges);
         }
       } catch (err) {
         console.warn('Failed to fetch user challenges from Supabase:', err);
@@ -1715,9 +1718,9 @@ async function populateLeaderboardChallengesDropdown() {
       select.remove(1);
     }
     
-    // Add user's assigned challenges
+    // Add user's assigned active challenges
     if (userChallenges && userChallenges.length > 0) {
-      console.log('Populating dropdown with user challenges:', userChallenges);
+      console.log('Populating dropdown with user active challenges:', userChallenges);
       userChallenges.forEach(challenge => {
         const option = document.createElement('option');
         option.value = challenge.id || challenge.name;
@@ -1725,7 +1728,7 @@ async function populateLeaderboardChallengesDropdown() {
         select.appendChild(option);
       });
     } else {
-      console.warn('No assigned challenges found for user');
+      console.warn('No active assigned challenges found for user');
     }
   } catch (error) {
     console.error('Error populating challenges dropdown:', error);
