@@ -1176,18 +1176,15 @@ function renderLeaderboardCharts(type, rankings) {
   // Prepare data
   const labels = rankings.map(r => r.email.split('@')[0]);
   const stepsData = rankings.map(r => r.steps);
-  const caloriesData = rankings.map(r => r.calories);
 
   console.log(`${type} Rankings:`, rankings);
 
   // Chart colors
   const primaryColor = '#7c3aed';
-  const secondaryColor = '#ec4899';
 
   // If no data, show message
   if (rankings.length === 0) {
     const stepsCtx = document.getElementById(`${type}StepsChart`);
-    const caloriesCtx = document.getElementById(`${type}CaloriesChart`);
     
     if (stepsCtx) {
       stepsCtx.getContext('2d').fillStyle = 'rgba(0,0,0,0.1)';
@@ -1197,15 +1194,6 @@ function renderLeaderboardCharts(type, rankings) {
       stepsCtx.getContext('2d').font = '16px Arial';
       stepsCtx.getContext('2d').textAlign = 'center';
       stepsCtx.getContext('2d').fillText(message, stepsCtx.width / 2, stepsCtx.height / 2);
-    }
-    if (caloriesCtx) {
-      caloriesCtx.getContext('2d').fillStyle = 'rgba(0,0,0,0.1)';
-      caloriesCtx.getContext('2d').fillRect(0, 0, caloriesCtx.width, caloriesCtx.height);
-      const message = 'No data available';
-      caloriesCtx.getContext('2d').fillStyle = '#999';
-      caloriesCtx.getContext('2d').font = '16px Arial';
-      caloriesCtx.getContext('2d').textAlign = 'center';
-      caloriesCtx.getContext('2d').fillText(message, caloriesCtx.width / 2, caloriesCtx.height / 2);
     }
     return;
   }
@@ -1225,41 +1213,6 @@ function renderLeaderboardCharts(type, rankings) {
           data: stepsData,
           backgroundColor: primaryColor,
           borderColor: primaryColor,
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  }
-
-  // Render Calories Chart
-  const caloriesCtx = document.getElementById(`${type}CaloriesChart`);
-  if (caloriesCtx) {
-    if (window[`${type}CaloriesChartInstance`]) {
-      window[`${type}CaloriesChartInstance`].destroy();
-    }
-    window[`${type}CaloriesChartInstance`] = new Chart(caloriesCtx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Calories',
-          data: caloriesData,
-          backgroundColor: secondaryColor,
-          borderColor: secondaryColor,
           borderWidth: 1
         }]
       },
