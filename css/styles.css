@@ -70,7 +70,7 @@ p {
 
 /* Logo Header */
 .logo-header {
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
   background: white;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
@@ -79,7 +79,7 @@ p {
 }
 
 .logo-header-img {
-  max-width: 150px;
+  max-width: 80px;
   height: auto;
   object-fit: contain;
 }
