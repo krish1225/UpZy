@@ -391,6 +391,34 @@ class SupabaseClient {
     }
   }
 
+  async removeUserFromChallenge(email, challengeId) {
+    const url = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}&challenge_id=eq.${challengeId}`;
+    const options = {
+      method: 'DELETE',
+      headers: {
+        'apikey': this.key,
+        'Authorization': `Bearer ${this.key}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    try {
+      console.log(`[Supabase] Removing ${email} from challenge ${challengeId}...`);
+      const response = await fetch(url, options);
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+      
+      console.log(`[Supabase] Successfully removed ${email} from challenge`);
+      return true;
+    } catch (error) {
+      console.error(`[Supabase] Failed to remove user from challenge:`, error);
+      throw error;
+    }
+  }
+
   async getChallengeProgress(email, challengeId) {
     let url = `${this.url}/rest/v1/user_challenge_progress?email=eq.${email}&challenge_id=eq.${challengeId}`;
     const options = {

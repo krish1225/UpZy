@@ -1740,17 +1740,23 @@ async function openAssignUsersModal(challengeId, challengeName) {
   // Set challenge name
   document.getElementById('assignChallengeNameDisplay').textContent = challengeName;
   
-  // Fetch all users from participants
+  // Fetch all users and existing challenge members
   try {
     let users = [];
+    let existingMembers = [];
     
     // Try Supabase first
     try {
       users = await supabase.getParticipants();
+      // Fetch existing members for this challenge
+      existingMembers = await supabase.getChallengeParticipants(challengeId);
     } catch (err) {
-      console.warn('Supabase fetch failed, using local participants:', err);
+      console.warn('Supabase fetch failed:', err);
       users = appState.participants || [];
     }
+    
+    // Create set of existing member emails for quick lookup
+    const existingEmails = new Set(existingMembers.map(m => m.email || m));
     
     // Render users as checkboxes
     const usersList = document.getElementById('usersList');
@@ -1758,15 +1764,22 @@ async function openAssignUsersModal(challengeId, challengeName) {
       usersList.innerHTML = '<p style="text-align: center; color: #999;">No users available</p>';
     } else {
       usersList.innerHTML = users
-        .map(user => `
-          <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee;">
-            <input type="checkbox" id="user-${user.email || user}" value="${user.email || user}" 
-                   onchange="toggleUserSelection(this)" style="margin-right: 0.75rem;">
-            <label for="user-${user.email || user}" style="flex: 1; margin: 0; cursor: pointer;">
-              ${user.email || user}
-            </label>
-          </div>
-        `)
+        .map(user => {
+          const email = user.email || user;
+          const isExisting = existingEmails.has(email);
+          return `
+            <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee;">
+              <input type="checkbox" id="user-${email}" value="${email}" 
+                     ${isExisting ? 'checked disabled' : ''}
+                     onchange="toggleUserSelection(this)" style="margin-right: 0.75rem;">
+              <label for="user-${email}" style="flex: 1; margin: 0; cursor: pointer;">
+                ${email}
+                ${isExisting ? '<span style="color: #10b981; font-weight: 600; margin-left: 0.5rem;">(Already assigned)</span>' : ''}
+              </label>
+              ${isExisting ? `<button type="button" class="btn btn-small" onclick="removeUserFromChallenge('${email}', '${challengeId}')" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>` : ''}
+            </div>
+          `;
+        })
         .join('');
     }
     
@@ -1786,7 +1799,21 @@ function toggleUserSelection(checkbox) {
   }
 }
 
-async function confirmAssignUsers() {
+async function removeUserFromChallenge(email, challengeId) {
+  if (!confirm(`Are you sure you want to remove ${email} from this challenge?`)) {
+    return;
+  }
+  
+  try {
+    await supabase.removeUserFromChallenge(email, challengeId);
+    showNotification(`Removed ${email} from challenge`, 'success');
+    // Refresh the modal
+    openAssignUsersModal(challengeId, document.getElementById('assignChallengeNameDisplay').textContent);
+  } catch (error) {
+    console.error('Error removing user from challenge:', error);
+    showNotification('Error removing user from challenge', 'error');
+  }
+}
   if (selectedUsersForChallenge.size === 0) {
     showNotification('Please select at least one user', 'error');
     return;
