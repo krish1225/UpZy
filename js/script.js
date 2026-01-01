@@ -1814,6 +1814,8 @@ async function removeUserFromChallenge(email, challengeId) {
     showNotification('Error removing user from challenge', 'error');
   }
 }
+
+async function confirmAssignUsers() {
   if (selectedUsersForChallenge.size === 0) {
     showNotification('Please select at least one user', 'error');
     return;
