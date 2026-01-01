@@ -81,19 +81,19 @@ class SupabaseClient {
   }
 
   // Submissions
-  async addSubmission(email, date, steps, calories) {
+  async addSubmission(email, date, steps, weight) {
     return this.request('POST', 'submissions', {
       email,
       submission_date: date,
       steps: parseInt(steps),
-      calories: parseInt(calories)
+      weight: parseFloat(weight)
     });
   }
 
-  async upsertSubmission(email, date, steps, calories) {
+  async upsertSubmission(email, date, steps, weight) {
     // Try to insert, if duplicate key error then update
     try {
-      return await this.addSubmission(email, date, steps, calories);
+      return await this.addSubmission(email, date, steps, weight);
     } catch (error) {
       if (error.message.includes('duplicate')) {
         // Update existing submission
@@ -108,7 +108,7 @@ class SupabaseClient {
           },
           body: JSON.stringify({
             steps: parseInt(steps),
-            calories: parseInt(calories)
+            weight: parseFloat(weight)
           })
         };
         const response = await fetch(url, options);

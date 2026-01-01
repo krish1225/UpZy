@@ -336,13 +336,13 @@ async function loadUserHistory() {
         day: 'numeric' 
       });
       const steps = submission.steps || 0;
-      const calories = submission.calories || 0;
+      const weight = submission.weight || 0;
       
       return `
         <tr style="border-bottom: 1px solid var(--border-color); ${index % 2 === 0 ? 'background-color: rgba(255,255,255,0.5);' : ''}">
           <td style="padding: 1rem; text-align: left;">${formattedDate}</td>
           <td style="padding: 1rem; text-align: center; font-weight: 600;">${steps.toLocaleString()}</td>
-          <td style="padding: 1rem; text-align: center; font-weight: 600;">${calories.toLocaleString()}</td>
+          <td style="padding: 1rem; text-align: center; font-weight: 600;">${weight.toLocaleString()}</td>
         </tr>
       `;
     }).join('');
@@ -807,13 +807,17 @@ async function updateDashboard() {
     const userSubmissions = await supabase.getUserSubmissions(email);
     
     const totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
-    const totalCalories = userSubmissions.reduce((sum, s) => sum + (s.calories || 0), 0);
+    
+    // Get the most recent weight
+    const latestWeight = userSubmissions.length > 0 
+      ? userSubmissions[0].weight || 0
+      : 0;
     
     // Calculate streak based on submissions
     const streak = calculateStreak(email, userSubmissions);
 
     document.getElementById('totalSteps').textContent = totalSteps.toLocaleString();
-    document.getElementById('totalCalories').textContent = totalCalories.toLocaleString();
+    document.getElementById('totalCalories').textContent = latestWeight.toLocaleString();
     document.getElementById('streak').textContent = streak;
 
     // Calculate rank - fetch all submissions from Supabase
@@ -834,7 +838,7 @@ async function handleSubmission(e) {
   e.preventDefault();
   
   const steps = parseInt(document.getElementById('stepsInput').value);
-  const calories = parseInt(document.getElementById('caloriesInput').value);
+  const weight = parseFloat(document.getElementById('weightInput').value);
   const date = document.getElementById('dateInput').value;
 
   if (!appState.currentUser) {
@@ -844,7 +848,7 @@ async function handleSubmission(e) {
 
   try {
     // Save to Supabase (insert or update if exists)
-    await supabase.upsertSubmission(appState.currentUser, date, steps, calories);
+    await supabase.upsertSubmission(appState.currentUser, date, steps, weight);
     
     // Also save locally
     const existing = appState.submissions.find(
@@ -853,13 +857,13 @@ async function handleSubmission(e) {
 
     if (existing) {
       existing.steps = steps;
-      existing.calories = calories;
+      existing.weight = weight;
     } else {
       appState.submissions.push({
         email: appState.currentUser,
         date,
         steps,
-        calories
+        weight
       });
     }
 
