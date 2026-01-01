@@ -826,12 +826,96 @@ async function updateDashboard() {
     const userRank = rankings.findIndex(r => r.email === email) + 1;
     document.getElementById('currentRank').textContent = userRank > 0 ? `#${userRank}` : '-';
 
+    // Update today's steps and yearly steps
+    const today = new Date().toISOString().split('T')[0];
+    const todaySubmission = userSubmissions.find(s => s.date === today);
+    const todaySteps = todaySubmission ? todaySubmission.steps : 0;
+    document.getElementById('todaySteps').textContent = todaySteps.toLocaleString();
+
+    const currentYear = new Date().getFullYear();
+    const yearSteps = userSubmissions
+      .filter(s => new Date(s.date).getFullYear() === currentYear)
+      .reduce((sum, s) => sum + (s.steps || 0), 0);
+    document.getElementById('yearSteps').textContent = yearSteps.toLocaleString();
+
+    // Draw weight loss chart
+    drawWeightChart(userSubmissions);
+
     // Load history table
     await loadUserHistory().catch(err => console.error('Error loading history:', err));
   } catch (error) {
     console.error('Error updating dashboard:', error);
     showNotification('Error loading dashboard data', 'error');
   }
+}
+
+function drawWeightChart(submissions) {
+  const canvas = document.getElementById('weightLossChart');
+  if (!canvas) return;
+
+  // Sort submissions by date
+  const sorted = [...submissions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Get last 30 days
+  const last30 = sorted.slice(-30);
+  
+  if (last30.length === 0) {
+    canvas.parentElement.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No weight data yet</p>';
+    return;
+  }
+
+  const labels = last30.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  const data = last30.map(s => s.weight || 0);
+
+  // Destroy existing chart if it exists
+  if (window.weightChartInstance) {
+    window.weightChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  window.weightChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Weight (lbs)',
+        data: data,
+        borderColor: '#ec4899',
+        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#ec4899',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            font: { size: 12 },
+            color: '#6b7280'
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: { color: '#6b7280' },
+          grid: { color: '#f3f4f6' }
+        },
+        x: {
+          ticks: { color: '#6b7280' },
+          grid: { color: '#f3f4f6' }
+        }
+      }
+    }
+  });
 }
 
 async function handleSubmission(e) {
