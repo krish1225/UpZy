@@ -997,6 +997,13 @@ function setupLeaderboardTabs() {
 
 async function updateDailyLeaderboard() {
   try {
+    // Check if user has active challenges
+    if (!appState.selectedChallengeFilter) {
+      console.log('No active challenge selected');
+      renderLeaderboardCharts('daily', []);
+      return;
+    }
+    
     // Use local date instead of UTC
     const today = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
     console.log('Loading daily leaderboard for (local date):', today);
@@ -1056,6 +1063,13 @@ async function updateDailyLeaderboard() {
 
 async function updateWeeklyLeaderboard() {
   try {
+    // Check if user has active challenges
+    if (!appState.selectedChallengeFilter) {
+      console.log('No active challenge selected');
+      renderLeaderboardCharts('weekly', []);
+      return;
+    }
+    
     // Use local dates instead of UTC
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -1101,6 +1115,13 @@ async function updateWeeklyLeaderboard() {
 
 async function updateOverallLeaderboard() {
   try {
+    // Check if user has active challenges
+    if (!appState.selectedChallengeFilter) {
+      console.log('No active challenge selected');
+      renderLeaderboardCharts('overall', []);
+      return;
+    }
+    
     const allSubmissions = await supabase.getSubmissions();
     
     // Filter by challenge if selected
@@ -1739,6 +1760,9 @@ async function populateLeaderboardChallengesDropdown() {
       }
     } else {
       console.warn('No active assigned challenges found for user');
+      // Clear selected challenge filter and show empty state
+      appState.selectedChallengeFilter = null;
+      await updateLeaderboard();
     }
   } catch (error) {
     console.error('Error populating challenges dropdown:', error);
