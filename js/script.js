@@ -816,15 +816,21 @@ async function updateDashboard() {
     // Calculate streak based on submissions
     const streak = calculateStreak(email, userSubmissions);
 
-    document.getElementById('totalSteps').textContent = totalSteps.toLocaleString();
-    document.getElementById('totalCalories').textContent = latestWeight.toLocaleString();
-    document.getElementById('streak').textContent = streak;
+    const totalStepsEl = document.getElementById('totalSteps');
+    if (totalStepsEl) totalStepsEl.textContent = totalSteps.toLocaleString();
+    
+    const totalCaloriesEl = document.getElementById('totalCalories');
+    if (totalCaloriesEl) totalCaloriesEl.textContent = latestWeight.toLocaleString();
+    
+    const streakEl = document.getElementById('streak');
+    if (streakEl) streakEl.textContent = streak;
 
     // Calculate rank - fetch all submissions from Supabase
     const allSubmissions = await supabase.getSubmissions();
     const rankings = calculateOverallRankings(allSubmissions);
     const userRank = rankings.findIndex(r => r.email === email) + 1;
-    document.getElementById('currentRank').textContent = userRank > 0 ? `#${userRank}` : '-';
+    const currentRankEl = document.getElementById('currentRank');
+    if (currentRankEl) currentRankEl.textContent = userRank > 0 ? `#${userRank}` : '-';
 
     // Update today's steps and yearly steps
     const today = new Date().toISOString().split('T')[0];
