@@ -271,7 +271,13 @@
 
                 <!-- Right: Weight Loss Chart -->
                 <div class="chart-section">
-                    <h3>Weight Trend</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Weight Trend</h3>
+                        <select id="weightChartPeriod" style="padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;">
+                            <option value="month">Last Month</option>
+                            <option value="year">Last Year</option>
+                        </select>
+                    </div>
                     <canvas id="weightLossChart"></canvas>
                 </div>
             </div>

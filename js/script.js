@@ -839,7 +839,16 @@ async function updateDashboard() {
     document.getElementById('yearSteps').textContent = yearSteps.toLocaleString();
 
     // Draw weight loss chart
-    drawWeightChart(userSubmissions);
+    appState.weightSubmissions = userSubmissions;
+    drawWeightChart(userSubmissions, 'month');
+
+    // Add event listener for chart period selector
+    const periodSelect = document.getElementById('weightChartPeriod');
+    if (periodSelect) {
+      periodSelect.addEventListener('change', (e) => {
+        drawWeightChart(appState.weightSubmissions, e.target.value);
+      });
+    }
 
     // Load history table
     await loadUserHistory().catch(err => console.error('Error loading history:', err));
@@ -849,23 +858,39 @@ async function updateDashboard() {
   }
 }
 
-function drawWeightChart(submissions) {
+function drawWeightChart(submissions, period = 'month') {
   const canvas = document.getElementById('weightLossChart');
   if (!canvas) return;
 
   // Sort submissions by date
   const sorted = [...submissions].sort((a, b) => new Date(a.date) - new Date(b.date));
   
-  // Get last 30 days
-  const last30 = sorted.slice(-30);
+  // Get data based on period
+  let data;
+  if (period === 'year') {
+    // Get last 365 days
+    data = sorted.slice(-365);
+  } else {
+    // Get last 30 days (default)
+    data = sorted.slice(-30);
+  }
   
-  if (last30.length === 0) {
+  if (data.length === 0) {
     canvas.parentElement.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No weight data yet</p>';
     return;
   }
 
-  const labels = last30.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-  const data = last30.map(s => s.weight || 0);
+  // Format labels based on period
+  let labels;
+  if (period === 'year') {
+    // Show week-based labels for year view
+    labels = data.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  } else {
+    // Show daily labels for month view
+    labels = data.map(s => new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  }
+  
+  const chartData = data.map(s => s.weight || 0);
 
   // Destroy existing chart if it exists
   if (window.weightChartInstance) {
@@ -879,13 +904,13 @@ function drawWeightChart(submissions) {
       labels: labels,
       datasets: [{
         label: 'Weight (lbs)',
-        data: data,
+        data: chartData,
         borderColor: '#ec4899',
         backgroundColor: 'rgba(236, 72, 153, 0.1)',
         borderWidth: 2,
         fill: true,
         tension: 0.4,
-        pointRadius: 3,
+        pointRadius: period === 'year' ? 2 : 3,
         pointBackgroundColor: '#ec4899',
         pointBorderColor: '#fff',
         pointBorderWidth: 2
