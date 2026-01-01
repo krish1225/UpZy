@@ -79,7 +79,7 @@ p {
 }
 
 .logo-header-img {
-  max-width: 80px;
+  max-width: 160px;
   height: auto;
   object-fit: contain;
 }
