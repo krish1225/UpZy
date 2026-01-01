@@ -910,13 +910,35 @@ function drawWeightChart(submissions, period = 'month') {
   let labels;
   labels = data.map(s => {
     try {
-      const date = new Date(s.date);
+      let date;
+      
+      // Try different date parsing methods
+      if (typeof s.date === 'string') {
+        // Handle YYYY-MM-DD format or ISO format
+        if (s.date.includes('-')) {
+          // Split and parse YYYY-MM-DD
+          const parts = s.date.split('-');
+          if (parts.length === 3) {
+            date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+          } else {
+            date = new Date(s.date);
+          }
+        } else {
+          date = new Date(s.date);
+        }
+      } else {
+        date = new Date(s.date);
+      }
+      
       // Check if date is valid
       if (isNaN(date.getTime())) {
+        console.warn('Invalid date:', s.date);
         return 'N/A';
       }
+      
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     } catch (e) {
+      console.error('Date parsing error:', e, 'for date:', s.date);
       return 'N/A';
     }
   });
