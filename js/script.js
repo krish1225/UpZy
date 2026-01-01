@@ -1883,7 +1883,8 @@ function closeAssignUsersModal() {
 async function populateLeaderboardChallengesDropdown() {
   try {
     const select = document.getElementById('leaderboardChallengeSelect');
-    if (!select) return;
+    const selector = document.getElementById('challengeSelector');
+    if (!select || !selector) return;
     
     // Get challenges assigned to the current user
     let userChallenges = [];
@@ -1924,17 +1925,23 @@ async function populateLeaderboardChallengesDropdown() {
         select.appendChild(option);
       });
       
-      // Auto-select the first active challenge
-      if (select.options.length > 1) {
+      // If only one challenge, hide dropdown and auto-select it
+      if (userChallenges.length === 1) {
+        selector.style.display = 'none';
+        appState.selectedChallengeFilter = userChallenges[0].id || userChallenges[0].name;
+        console.log('Only one challenge found, auto-selected:', appState.selectedChallengeFilter);
+        await updateLeaderboard();
+      } else {
+        // Multiple challenges - show dropdown and auto-select first
+        selector.style.display = 'block';
         select.value = select.options[1].value;
         appState.selectedChallengeFilter = select.options[1].value;
         console.log('Auto-selected first active challenge:', appState.selectedChallengeFilter);
-        
-        // Refresh leaderboard with the selected challenge
         await updateLeaderboard();
       }
     } else {
       console.warn('No active assigned challenges found for user');
+      selector.style.display = 'none';
       // Clear selected challenge filter and show empty state
       appState.selectedChallengeFilter = null;
       await updateLeaderboard();
