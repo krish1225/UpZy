@@ -1758,29 +1758,42 @@ async function openAssignUsersModal(challengeId, challengeName) {
     // Create set of existing member emails for quick lookup
     const existingEmails = new Set(existingMembers.map(m => m.email || m));
     
-    // Render users as checkboxes
+    // Render users as 3-column table
     const usersList = document.getElementById('usersList');
     if (users.length === 0) {
       usersList.innerHTML = '<p style="text-align: center; color: #999;">No users available</p>';
     } else {
-      usersList.innerHTML = users
+      // Create header row
+      let html = `
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; padding: 0.75rem; font-weight: 600; border-bottom: 2px solid #ddd; background: #f9fafb;">
+          <div>User Email</div>
+          <div style="text-align: center;">Assigned</div>
+          <div style="text-align: center;">Action</div>
+        </div>
+      `;
+      
+      // Create rows
+      html += users
         .map(user => {
           const email = user.email || user;
           const isExisting = existingEmails.has(email);
           return `
-            <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee;">
-              <input type="checkbox" id="user-${email}" value="${email}" 
-                     ${isExisting ? 'checked disabled' : ''}
-                     onchange="toggleUserSelection(this)" style="margin-right: 0.75rem;">
-              <label for="user-${email}" style="flex: 1; margin: 0; cursor: pointer;">
-                ${email}
-                ${isExisting ? '<span style="color: #10b981; font-weight: 600; margin-left: 0.5rem;">(Already assigned)</span>' : ''}
-              </label>
-              ${isExisting ? `<button type="button" class="btn btn-small" onclick="removeUserFromChallenge('${email}', '${challengeId}')" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>` : ''}
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; padding: 0.75rem; align-items: center; border-bottom: 1px solid #eee;">
+              <div style="word-break: break-all;">${email}</div>
+              <div style="text-align: center;">
+                <input type="checkbox" id="user-${email}" value="${email}" 
+                       ${isExisting ? 'checked disabled' : ''}
+                       onchange="toggleUserSelection(this)">
+              </div>
+              <div style="text-align: center;">
+                ${isExisting ? `<button type="button" onclick="removeUserFromChallenge('${email}', '${challengeId}')" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>` : '<span style="color: #999;">-</span>'}
+              </div>
             </div>
           `;
         })
         .join('');
+      
+      usersList.innerHTML = html;
     }
     
     // Show modal
