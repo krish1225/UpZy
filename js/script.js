@@ -806,6 +806,13 @@ async function updateDashboard() {
     // Fetch user submissions from Supabase
     const userSubmissions = await supabase.getUserSubmissions(email);
     
+    // Safety check: ensure userSubmissions is an array
+    if (!Array.isArray(userSubmissions)) {
+      console.error('userSubmissions is not an array:', userSubmissions);
+      showNotification('Error loading submissions', 'error');
+      return;
+    }
+    
     const totalSteps = userSubmissions.reduce((sum, s) => sum + (s.steps || 0), 0);
     
     // Get the most recent weight

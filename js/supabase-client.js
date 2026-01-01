@@ -151,7 +151,15 @@ class SupabaseClient {
         return [];
       }
       
-      return result || [];
+      // Handle both array and object responses
+      if (Array.isArray(result)) {
+        return result;
+      } else if (result && typeof result === 'object') {
+        // If result is an object with a data property, return that
+        return result.data || [];
+      }
+      
+      return [];
     } catch (error) {
       console.error('Failed to get user submissions:', error);
       return [];
