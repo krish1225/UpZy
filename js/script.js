@@ -908,9 +908,20 @@ function drawWeightChart(submissions, period = 'month') {
 
   // Format labels based on period
   let labels;
-  labels = data.map(s => {
+  labels = data.map((s, index) => {
     try {
+      // First log what we're trying to parse
+      if (index === 0) {
+        console.log('First submission object:', s);
+      }
+      
       let date;
+      
+      // Handle null/undefined dates
+      if (!s.date) {
+        console.warn('Missing date at index', index);
+        return `Day ${index + 1}`;
+      }
       
       // Try different date parsing methods
       if (typeof s.date === 'string') {
@@ -918,28 +929,31 @@ function drawWeightChart(submissions, period = 'month') {
         if (s.date.includes('-')) {
           // Split and parse YYYY-MM-DD
           const parts = s.date.split('-');
-          if (parts.length === 3) {
-            date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+          if (parts.length >= 3) {
+            date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
           } else {
             date = new Date(s.date);
           }
         } else {
           date = new Date(s.date);
         }
+      } else if (typeof s.date === 'number') {
+        date = new Date(s.date);
       } else {
         date = new Date(s.date);
       }
       
       // Check if date is valid
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date:', s.date);
-        return 'N/A';
+        console.warn('Invalid date at index', index, ':', s.date, 'type:', typeof s.date);
+        return `Day ${index + 1}`;
       }
       
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return formatted;
     } catch (e) {
-      console.error('Date parsing error:', e, 'for date:', s.date);
-      return 'N/A';
+      console.error('Date parsing error at index', index, ':', e, 'for date:', s.date);
+      return `Day ${index + 1}`;
     }
   });
   
